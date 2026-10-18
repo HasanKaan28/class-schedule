@@ -36,6 +36,9 @@ android {
         }
     }
 
+    // The web app in ../web is bundled as the offline fallback.
+    sourceSets["main"].assets.setSrcDirs(listOf("../web"))
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

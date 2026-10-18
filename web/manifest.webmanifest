@@ -1,0 +1,13 @@
+{
+  "name": "Class Schedule for IUS",
+  "short_name": "Class Schedule",
+  "description": "Weekly class schedule for IUS students, with course details from eCampus. Unofficial.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

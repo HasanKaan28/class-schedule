@@ -1,57 +1,70 @@
-# Class Schedule
+# Class Schedule for IUS
 
-A small Android app with my Fall 2026–27 timetable at the International University of Sarajevo (IUS). It opens in English and has an EN/TR switch.
+A weekly class schedule for students of the International University of Sarajevo. Add your classes once, and the app fills in course names, ECTS, lecturers, assistants, e-mail addresses and office hours from IUS eCampus. Tap a class to open its syllabus on eCampus.
 
-## Screens
+This is an unofficial student project. It is not made or endorsed by IUS.
 
-- **Today**: the class happening now (with the time left) or the next one, then the chosen day's classes with the free gaps between them.
-- **Week**: a Monday–Friday grid. Tap a class to see its time, room and instructors.
-- **Courses**: every course with its lecture and tutorial times, ECTS, instructors, offices, office hours and notes.
+- **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
+- **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
+- Languages: English and Turkish (switch in the top right).
 
-The app works offline and follows the phone's light or dark setting.
-
-## Install
+## Install on Android
 
 1. On the phone, open the latest release: <https://github.com/HasanKaan28/class-schedule/releases/latest>
-2. Download `class-schedule-<version>.apk`.
-3. Open the file and allow installing from this source when Android asks.
+2. Download `class-schedule-<version>.apk` and open it.
+3. Allow installing from this source when Android asks.
 
-Every release is signed with the same key, so a newer version installs over the old one.
+You only need to do this once.
 
-## Updating the timetable
+## Using it
 
-All timetable data is in [`app/src/main/assets/data.js`](app/src/main/assets/data.js). Interface text is in [`i18n.js`](app/src/main/assets/i18n.js).
+1. Tap **+ Add class** and type a course code, for example `CS103`. Pick the course from the list.
+2. The sections listed on eCampus appear. Tap yours to fill in the type, day, time and room, or enter them yourself.
+3. Optionally add your instructor's name; the app then shows their office and office hours too.
+4. Repeat for each lecture, tutorial and lab.
 
-1. Edit `data.js`.
-2. Preview the screens in a desktop browser: run `node tools/serve.js` and open <http://localhost:5173>. Add `?now=2026-10-19T12:30` to the address to see the app at a specific moment.
-3. Commit and push, then tag a version:
+- **Today** shows the class happening now or the next one, and the chosen day's classes with the free gaps between them.
+- **Week** shows Monday to Friday (and Saturday if you have classes then).
+- **Courses** lists each course with its instructors and office hours. Edit or delete classes here.
 
-   ```bash
-   git tag v1.0.1
-   git push origin v1.0.1
-   ```
+Your timetable is stored only on your phone (or in your browser). It is never uploaded.
 
-   GitHub Actions builds the APK and attaches it to a new release.
+## How the data stays current
+
+[`tools/collect_ecampus.py`](tools/collect_ecampus.py) reads the public syllabus and office-hours pages on eCampus and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every Monday and commits any changes. It waits 10 seconds between requests, as eCampus's `robots.txt` asks, so a full run takes about two hours.
+
+eCampus is sometimes out of date (a tutorial time can change before the syllabus does). Times you enter yourself always win over eCampus.
 
 ## How it is built
 
-- **Android shell**: one Activity with a WebView ([`MainActivity.java`](app/src/main/java/io/github/hasankaan28/classschedule/MainActivity.java)) that loads the HTML, CSS and JavaScript bundled in `assets/`. The app asks for no permissions.
-- **Build**: [`.github/workflows/build.yml`](.github/workflows/build.yml) with Gradle 8.10.2, Android Gradle Plugin 8.7.3 and JDK 17. Android 8 (API 26) or newer.
-- **Signing**: the workflow reads a PKCS#12 key from the repository secrets `SIGNING_KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD` and `SIGNING_KEY_ALIAS` (`release`). Without them it signs with a throwaway debug key. To make a key, run `python tools/make_signing_key.py <path outside the repo>/release.p12` (needs the `cryptography` package).
-- **Local build** (optional): with JDK 17, the Android SDK and Gradle 8.10 or newer, run `gradle assembleRelease`.
+| Part | Where | Notes |
+| --- | --- | --- |
+| Web app | [`web/`](web) | Plain HTML, CSS and JavaScript. Deployed to GitHub Pages by [`pages.yml`](.github/workflows/pages.yml). A service worker keeps the last copy for offline use. |
+| Android app | [`app/`](app) | One Activity with a WebView ([`MainActivity.java`](app/src/main/java/io/github/hasankaan28/classschedule/MainActivity.java)). Loads the Pages site; with no internet on first launch it opens the copy of `web/` bundled in the APK. Stores the timetable in Android's SharedPreferences so both copies see the same data. |
+| APK build | [`build.yml`](.github/workflows/build.yml) | Gradle 8.10.2, Android Gradle Plugin 8.7.3, JDK 17. Android 8 (API 26) or newer. A `v*` tag publishes a GitHub release. |
+| Signing | repository secrets | `SIGNING_KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` (`release`). Create a key with `python tools/make_signing_key.py <path outside the repo>/release.p12` (needs the `cryptography` package). |
+
+### Working on it
+
+```bash
+node tools/serve.js
+```
+
+Then open <http://localhost:5173>. Add `?now=2026-10-19T12:30` to the address to see the app at a specific moment. To test the collector without a two-hour run:
+
+```bash
+python tools/collect_ecampus.py --pages 1 --limit 3 --out /tmp/courses.js
+```
 
 ## Design notes
 
 | Decision | Alternative considered | Reason |
 | --- | --- | --- |
-| WebView shell around HTML screens | Kotlin with Jetpack Compose | The screens can be tested in a desktop browser, and the native part is small enough that CI builds rarely break. |
-| Build on GitHub Actions | Install the JDK and Android SDK locally | Nothing to install on the PC, and every tag produces a downloadable APK. |
-| Timetable bundled in the app | Download it from the web | Works offline. The timetable changes only a few times a term. |
-| English by default with an in-app Turkish switch | Follow the phone's language | Requested. The choice is saved on the phone. |
-| Android system fonts (Roboto, Roboto Condensed) | Bundled web fonts | Works offline with no font files to ship. |
+| Students enter their own classes | Read schedules from SIS | SIS needs each student's login. Typing a code and tapping a section takes a few seconds. |
+| Weekly collection on GitHub Actions | Each phone reads eCampus directly | One polite crawl a week instead of every phone hitting eCampus, and a site redesign only needs one fix in the collector. |
+| App loads its screens from GitHub Pages | Screens bundled only in the APK | Students install once; fixes and features reach everyone without a new APK. |
+| Bundled offline copy and native storage | Online only | The app opens with no connection, and the timetable is never lost when switching between copies. |
+| WebView shell | Kotlin with Jetpack Compose | One code base for Android and the browser, testable in a desktop browser. |
+| English default with Turkish switch | Follow the phone language | Requested. The choice is saved on the device. |
 
-Not in this version: class reminders, a home-screen widget, or editing the timetable inside the app.
-
-## Data sources
-
-The IUS student portal's weekly schedule, the course tutorial announcement, and the IUS eCampus syllabus and office-hours pages, as of 18 October 2026. Instructor contact details are the ones those pages publish.
+Not in this version: class reminders, a home-screen widget, sharing a timetable with friends, or exporting it.

@@ -1,0 +1,37 @@
+name: Collect eCampus data
+
+# Every Monday early morning (Sarajevo time). eCampus asks for 10 seconds between requests,
+# so a full run takes about two hours.
+on:
+  schedule:
+    - cron: '17 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Collect course data
+        run: python3 -u tools/collect_ecampus.py --out web/data/courses.js
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/data/courses.js
+          if git diff --cached --quiet; then
+            echo "Course data unchanged."
+          else
+            git commit -m "Update eCampus course data"
+            git push
+          fi

@@ -9,3 +9,4 @@ local.properties
 *.p12
 *.jks
 *.keystore
+__pycache__/

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151E29" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Weekly class schedule for IUS students, with course details from eCampus. Unofficial.">
+<title>Class Schedule</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-head">
+  <div>
+    <h1 data-i18n="appTitle">Class Schedule</h1>
+    <p class="term" data-i18n="appSub"></p>
+  </div>
+  <div class="lang" role="group" id="langGroup">
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" data-lang="tr">TR</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="view" id="view-today" role="tabpanel" aria-labelledby="tab-today">
+    <section class="empty-card" id="emptyCard" hidden>
+      <h2 data-i18n="emptyTitle"></h2>
+      <p data-i18n="emptyBody"></p>
+      <button type="button" class="btn primary" data-add data-i18n="addClass"></button>
+    </section>
+    <section class="status" id="status" aria-live="polite" hidden></section>
+    <div class="chips" id="chips"></div>
+    <h2 class="day-title" id="dayTitle"></h2>
+    <p class="hint" id="dayHint" hidden></p>
+    <ol class="timeline" id="timeline"></ol>
+  </section>
+
+  <section class="view" id="view-week" role="tabpanel" aria-labelledby="tab-week" hidden>
+    <p class="summary" id="summary"></p>
+    <div class="week" id="week"></div>
+    <p class="hint" data-i18n="tapHint"></p>
+  </section>
+
+  <section class="view" id="view-courses" role="tabpanel" aria-labelledby="tab-courses" hidden>
+    <button type="button" class="btn primary wide" data-add data-i18n="addClass"></button>
+    <ul class="courses" id="courseList"></ul>
+    <p class="source" id="source"></p>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <button type="button" role="tab" id="tab-today" data-tab="today" data-i18n="today"></button>
+  <button type="button" role="tab" id="tab-week" data-tab="week" data-i18n="week"></button>
+  <button type="button" role="tab" id="tab-courses" data-tab="courses" data-i18n="courses"></button>
+</nav>
+
+<dialog id="editor" aria-labelledby="editorTitle">
+  <form id="editorForm" novalidate>
+    <h2 id="editorTitle"></h2>
+
+    <label class="field">
+      <span data-i18n="fCode"></span>
+      <input id="fCode" lang="en" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CS103">
+    </label>
+    <ul class="suggest" id="codeSuggest" hidden></ul>
+    <p class="course-name" id="fCourseName"></p>
+    <label class="field" id="fNameWrap" hidden>
+      <span data-i18n="fName"></span>
+      <input id="fName" autocomplete="off">
+    </label>
+
+    <div class="field" id="sectionPicker" hidden>
+      <span data-i18n="fromEcampus"></span>
+      <div class="sections" id="sectionList"></div>
+    </div>
+
+    <div class="field">
+      <span data-i18n="fType"></span>
+      <div class="seg" id="fType" role="group"></div>
+    </div>
+    <div class="field">
+      <span data-i18n="fDay"></span>
+      <div class="seg" id="fDay" role="group"></div>
+    </div>
+    <div class="row2">
+      <label class="field"><span data-i18n="fStart"></span><input type="time" id="fStart" step="300"></label>
+      <label class="field"><span data-i18n="fEnd"></span><input type="time" id="fEnd" step="300"></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span data-i18n="fRoom"></span><input id="fRoom" autocomplete="off" placeholder="B F2.15"></label>
+      <label class="field"><span data-i18n="fSection"></span><input id="fSection" autocomplete="off" inputmode="numeric" placeholder="2"></label>
+    </div>
+    <label class="field">
+      <span data-i18n="fWho"></span>
+      <input id="fWho" list="staffList" autocomplete="off">
+    </label>
+    <datalist id="staffList"></datalist>
+
+    <p class="warn" id="fWarn" hidden></p>
+    <p class="error" id="fError" role="alert" hidden></p>
+
+    <div class="actions">
+      <button type="button" class="btn danger" id="fDelete" hidden></button>
+      <button type="button" class="btn ghost" id="fCancel" data-i18n="cancel"></button>
+      <button type="submit" class="btn primary" data-i18n="save"></button>
+    </div>
+  </form>
+</dialog>
+
+<script src="data/courses.js"></script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

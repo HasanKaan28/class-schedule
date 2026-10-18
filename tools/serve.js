@@ -1,14 +1,16 @@
-// Serves the app's web screens for previewing in a desktop browser: node tools/serve.js [port]
+// Serves the web app for previewing in a desktop browser: node tools/serve.js [port]
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..', 'app', 'src', 'main', 'assets');
+const root = path.join(__dirname, '..', 'web');
 const port = Number(process.argv[2]) || 5173;
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8'
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.webmanifest': 'application/manifest+json'
 };
 
 http.createServer((req, res) => {

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
+  <!-- Same drawing as the Android launcher icon: a timetable sheet with course-coloured blocks. -->
+  <rect width="108" height="108" fill="#1F5FD1"/>
+  <path fill="#FFFFFF" d="M36,34h36a4,4 0 0 1 4,4v32a4,4 0 0 1 -4,4h-36a4,4 0 0 1 -4,-4v-32a4,4 0 0 1 4,-4z"/>
+  <path fill="#15202D" d="M36,34h36a4,4 0 0 1 4,4v4h-44v-4a4,4 0 0 1 4,-4z"/>
+  <path fill="#D9480F" d="M37,46h10v12h-10z"/>
+  <path fill="#2B8A3E" d="M37,60h10v10h-10z"/>
+  <path fill="#1C7ED6" d="M49,46h10v8h-10z"/>
+  <path fill="#C2255C" d="M49,57h10v13h-10z"/>
+  <path fill="#7048E8" d="M61,49h10v14h-10z"/>
+</svg>
