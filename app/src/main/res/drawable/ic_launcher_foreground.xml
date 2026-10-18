@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A timetable sheet: dark header band and one block per course colour. Drawn inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,34h36a4,4 0 0 1 4,4v32a4,4 0 0 1 -4,4h-36a4,4 0 0 1 -4,-4v-32a4,4 0 0 1 4,-4z" />
+    <path
+        android:fillColor="#15202D"
+        android:pathData="M36,34h36a4,4 0 0 1 4,4v4h-44v-4a4,4 0 0 1 4,-4z" />
+    <path android:fillColor="#D9480F" android:pathData="M37,46h10v12h-10z" />
+    <path android:fillColor="#2B8A3E" android:pathData="M37,60h10v10h-10z" />
+    <path android:fillColor="#1C7ED6" android:pathData="M49,46h10v8h-10z" />
+    <path android:fillColor="#C2255C" android:pathData="M49,57h10v13h-10z" />
+    <path android:fillColor="#7048E8" android:pathData="M61,49h10v14h-10z" />
+</vector>
