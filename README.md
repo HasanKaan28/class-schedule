@@ -31,7 +31,7 @@ Your timetable is stored only on your phone (or in your browser). It is never up
 
 ## How the data stays current
 
-[`tools/collect_ecampus.py`](tools/collect_ecampus.py) reads the public syllabus and office-hours pages on eCampus and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every Monday and commits any changes. It waits 10 seconds between requests, as eCampus's `robots.txt` asks, so a full run takes about two hours.
+[`tools/collect_ecampus.py`](tools/collect_ecampus.py) reads the public syllabus and office-hours pages on eCampus and writes [`web/data/courses.js`](web/data/courses.js). It waits 10 seconds between requests, as eCampus's `robots.txt` asks. eCampus lists about 1,700 syllabi, which takes about five and a half hours to read, so the [collect workflow](.github/workflows/collect.yml) works in batches: each run reads for four and a half hours (syllabi never read come first, then the oldest; first-year courses before others), saves, and starts another run while some syllabi have never been read. After the first full pass, a nightly run keeps refreshing the oldest syllabi, so every course is re-read every couple of days.
 
 eCampus is sometimes out of date (a tutorial time can change before the syllabus does). Times you enter yourself always win over eCampus.
 
@@ -53,7 +53,7 @@ node tools/serve.js
 Then open <http://localhost:5173>. Add `?now=2026-10-19T12:30` to the address to see the app at a specific moment. To test the collector without a two-hour run:
 
 ```bash
-python tools/collect_ecampus.py --pages 1 --limit 3 --out /tmp/courses.js
+python tools/collect_ecampus.py --pages 1 --limit 3 --out build/test-courses.js
 ```
 
 ## Design notes
@@ -61,7 +61,7 @@ python tools/collect_ecampus.py --pages 1 --limit 3 --out /tmp/courses.js
 | Decision | Alternative considered | Reason |
 | --- | --- | --- |
 | Students enter their own classes | Read schedules from SIS | SIS needs each student's login. Typing a code and tapping a section takes a few seconds. |
-| Weekly collection on GitHub Actions | Each phone reads eCampus directly | One polite crawl a week instead of every phone hitting eCampus, and a site redesign only needs one fix in the collector. |
+| Collection in batches on GitHub Actions | Each phone reads eCampus directly | One polite crawler instead of every phone hitting eCampus, and a site redesign only needs one fix in the collector. |
 | App loads its screens from GitHub Pages | Screens bundled only in the APK | Students install once; fixes and features reach everyone without a new APK. |
 | Bundled offline copy and native storage | Online only | The app opens with no connection, and the timetable is never lost when switching between copies. |
 | WebView shell | Kotlin with Jetpack Compose | One code base for Android and the browser, testable in a desktop browser. |

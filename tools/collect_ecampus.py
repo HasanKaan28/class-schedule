@@ -1,14 +1,16 @@
 """Collects course and office-hour data from IUS eCampus into web/data/courses.js.
 
 Usage:
-  python tools/collect_ecampus.py [--out web/data/courses.js] [--delay 10] [--pages N] [--limit N]
+  python tools/collect_ecampus.py [--out web/data/courses.js] [--budget 270] [--delay 10] [--pages N] [--limit N]
 
 Only public pages are read: the syllabus list, each syllabus, and the office-hours directory.
-eCampus asks crawlers for a 10-second delay (robots.txt), so a full run takes about two hours.
-Standard library only, so it runs on a bare CI runner.
+eCampus asks crawlers for a 10-second delay (robots.txt) and lists about 1,700 syllabi, which is more
+than one CI job can read. So each run reads syllabi until its time budget is used up, never-read and
+oldest first, and keeps the earlier details of the rest. Standard library only, so it runs on a bare CI runner.
 """
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -280,8 +282,25 @@ def parse_office_hours(html):
 
 # --- Main -------------------------------------------------------------------------------------
 
-def collect(args):
+def course_level(code):
+    """CS103 -> 1. First-year courses are collected first because most students need them."""
+    match = re.search(r"\d", code)
+    return int(match.group(0)) if match else 9
+
+
+def read_previous(out):
+    if not out.exists():
+        return {}
+    match = re.search(r"=\s*(\{.*\});?\s*$", out.read_text(encoding="utf-8"), re.S)
+    return json.loads(match.group(1)) if match else {}
+
+
+def collect(args, previous):
+    deadline = time.monotonic() + args.budget * 60
     fetcher = Fetcher(args.delay)
+    old_courses = previous.get("courses", {})
+    fetched = dict(previous.get("fetched", {}))
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     listing, seen = [], set()
     for page in range(args.pages or 1000):
@@ -291,50 +310,69 @@ def collect(args):
         seen.update(r["url"] for r in rows)
         listing.extend(rows)
         print(f"syllabus list page {page}: {len(rows)} courses", file=sys.stderr)
+    if len(listing) < len(old_courses) * 0.7 and not args.force:
+        sys.exit(f"Refusing to continue: eCampus lists {len(listing)} courses, the saved data has {len(old_courses)}.")
 
-    courses = {}
-    for index, row in enumerate(listing[: args.limit or None]):
+    staff = previous.get("staff", {})
+    if not args.limit:
+        found_staff = {}
+        for page in range(1000):
+            found = parse_office_hours(fetcher.get(f"/office-hours?page={page}"))
+            new = {k: v for k, v in found.items() if k not in found_staff}
+            if not new:
+                break
+            found_staff.update(new)
+            print(f"office hours page {page}: {len(found)} people", file=sys.stderr)
+        staff = found_staff or staff
+
+    # Every listed course keeps its last details until its syllabus is read again.
+    courses, rows_by_code = {}, {}
+    for row in listing:
         if not row["code"] or row["code"] in courses:
             continue
+        rows_by_code[row["code"]] = row
+        course = dict(old_courses.get(row["code"], {}))
+        course.update({"n": row["name"], "u": row["unit"], "url": row["url"]})
+        if row["ects"].isdigit():
+            course["ects"] = int(row["ects"])
+        courses[row["code"]] = course
+
+    # Never-read syllabi first, then the oldest; within that, first-year courses first.
+    queue = sorted(courses, key=lambda c: (fetched.get(c, ""), course_level(c), c))
+    if args.limit:
+        queue = queue[: args.limit]
+    done = 0
+    for code in queue:
+        if time.monotonic() + args.delay + 60 > deadline:
+            print(f"Time budget used up after {done} syllabi.", file=sys.stderr)
+            break
+        row = rows_by_code[code]
         course = {"n": row["name"], "u": row["unit"], "url": row["url"]}
         if row["ects"].isdigit():
             course["ects"] = int(row["ects"])
         try:
             details = parse_syllabus(fetcher.get(row["url"]))
             course.update({k: v for k, v in details.items() if v not in (None, "", [])})
-        except Exception as err:  # keep the list entry even if one syllabus fails
-            print(f"  {row['code']}: {err}", file=sys.stderr)
-        if "lec" not in course and row["holder"] and row["holder"] != "TBA":
-            course["lec"] = [{"n": row["holder"]}]
-        courses[row["code"]] = course
-        print(f"[{index + 1}/{len(listing)}] {row['code']}: {len(course.get('sec', []))} meetings", file=sys.stderr)
+            if "lec" not in course and row["holder"] and row["holder"] != "TBA":
+                course["lec"] = [{"n": row["holder"]}]
+            courses[code] = course
+        except Exception as err:  # keep the previous details; the course is retried when it is oldest again
+            print(f"  {code}: {err}", file=sys.stderr)
+        fetched[code] = today
+        done += 1
+        print(f"[{done}/{len(queue)}] {code}: {len(courses[code].get('sec', []))} meetings", file=sys.stderr)
 
-    staff = {}
-    if not args.limit:
-        for page in range(1000):
-            found = parse_office_hours(fetcher.get(f"/office-hours?page={page}"))
-            new = {k: v for k, v in found.items() if k not in staff}
-            if not new:
-                break
-            staff.update(new)
-            print(f"office hours page {page}: {len(found)} people", file=sys.stderr)
-
-    print(f"{len(courses)} courses, {len(staff)} staff, {fetcher.count} requests", file=sys.stderr)
-    return {"courses": dict(sorted(courses.items())), "staff": dict(sorted(staff.items()))}
+    fetched = {c: d for c, d in fetched.items() if c in courses}
+    remaining = sum(1 for c in courses if c not in fetched)
+    print(f"{len(courses)} courses ({remaining} not read yet), {len(staff)} staff, {fetcher.count} requests", file=sys.stderr)
+    payload = {"courses": dict(sorted(courses.items())), "staff": dict(sorted(staff.items())), "fetched": dict(sorted(fetched.items()))}
+    return payload, (remaining if done else 0)
 
 
-def write(payload, out, force):
-    previous = None
-    if out.exists():
-        match = re.search(r"=\s*(\{.*\});?\s*$", out.read_text(encoding="utf-8"), re.S)
-        previous = json.loads(match.group(1)) if match else None
-    if previous and not force:
-        old_count, new_count = len(previous.get("courses", {})), len(payload["courses"])
-        if new_count < old_count * 0.7:
-            sys.exit(f"Refusing to overwrite: {new_count} courses now vs {old_count} before. Use --force if this is expected.")
-        if {k: previous.get(k) for k in ("courses", "staff")} == payload:
-            print("No changes.", file=sys.stderr)
-            return
+def write(payload, previous, out):
+    if previous and {k: previous.get(k) for k in payload} == payload:
+        print("No changes.", file=sys.stderr)
+        return
     payload = {"generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "source": BASE, **payload}
     out.parent.mkdir(parents=True, exist_ok=True)
     body = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
@@ -346,8 +384,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, default=Path("web/data/courses.js"))
     parser.add_argument("--delay", type=float, default=10.0, help="seconds between requests (robots.txt asks for 10)")
+    parser.add_argument("--budget", type=float, default=270, help="minutes to spend before saving what was collected")
     parser.add_argument("--pages", type=int, help="only read this many syllabus list pages (for testing)")
     parser.add_argument("--limit", type=int, help="only read this many syllabi and skip office hours (for testing)")
-    parser.add_argument("--force", action="store_true", help="write even if far fewer courses were found than before")
+    parser.add_argument("--force", action="store_true", help="continue even if eCampus lists far fewer courses than before")
     args = parser.parse_args()
-    write(collect(args), args.out, args.force or bool(args.limit))
+    previous = {} if args.pages else read_previous(args.out)
+    payload, remaining = collect(args, previous)
+    write(payload, previous, args.out)
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            output.write(f"remaining={remaining}\n")

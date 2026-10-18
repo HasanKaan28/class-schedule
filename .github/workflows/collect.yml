@@ -1,14 +1,16 @@
 name: Collect eCampus data
 
-# Every Monday early morning (Sarajevo time). eCampus asks for 10 seconds between requests,
-# so a full run takes about two hours.
+# eCampus asks for 10 seconds between requests and lists about 1,700 syllabi, so one run cannot read
+# them all. Each run reads for 4.5 hours, saves, and starts another run while some syllabi have never
+# been read. After that, a nightly run refreshes the oldest ones.
 on:
   schedule:
-    - cron: '17 2 * * 1'
+    - cron: '17 1 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: collect
@@ -17,12 +19,13 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v5
 
       - name: Collect course data
-        run: python3 -u tools/collect_ecampus.py --out web/data/courses.js
+        id: collect
+        run: python3 -u tools/collect_ecampus.py --out web/data/courses.js --budget 270
 
       - name: Commit changes
         run: |
@@ -35,3 +38,9 @@ jobs:
             git commit -m "Update eCampus course data"
             git push
           fi
+
+      - name: Continue with syllabi not read yet
+        if: steps.collect.outputs.remaining != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run collect.yml --ref main
