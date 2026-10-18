@@ -1,6 +1,7 @@
 /* Layout: phone-first app shell. Header and tab bar stay put, the middle scrolls.
    Each course gets one of eight colours in the order it first appears in the week.
-   Fonts are system fonts (Roboto and Roboto Condensed on Android), so nothing has to download. */
+   Fonts are system fonts (Roboto and Roboto Condensed on Android), so nothing has to download.
+   Theme: follows the phone unless Settings sets data-theme="light" or "dark" on <html>. */
 :root {
   --bg: #F3F5F8;
   --surface: #FFFFFF;
@@ -8,6 +9,7 @@
   --muted: #5B6877;
   --line: #DDE3EA;
   --accent: #1F5FD1;
+  --on-accent: #FFFFFF;
   --danger: #C92A2A;
   --warn-bg: #FFF4E0;
   --warn-ink: #7A4A00;
@@ -20,13 +22,21 @@
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0E141C; --surface: #151E29; --ink: #E5EAF1; --muted: #94A2B4; --line: #253142; --accent: #79AEFF;
+  :root:not([data-theme="light"]) {
+    --bg: #0E141C; --surface: #151E29; --ink: #E5EAF1; --muted: #94A2B4; --line: #253142; --accent: #79AEFF; --on-accent: #0E141C;
     --danger: #FF8787; --warn-bg: #3A2C12; --warn-ink: #FFD8A8;
     --p0: #FF8A4C; --p1: #5AAAF2; --p2: #A994FB; --p3: #5DC876;
     --p4: #F2709C; --p5: #3BC9DB; --p6: #FFC234; --p7: #D9A066;
     color-scheme: dark;
   }
+}
+/* Same dark values, so an explicit choice wins over the phone's setting in both directions. */
+:root[data-theme="dark"] {
+  --bg: #0E141C; --surface: #151E29; --ink: #E5EAF1; --muted: #94A2B4; --line: #253142; --accent: #79AEFF; --on-accent: #0E141C;
+  --danger: #FF8787; --warn-bg: #3A2C12; --warn-ink: #FFD8A8;
+  --p0: #FF8A4C; --p1: #5AAAF2; --p2: #A994FB; --p3: #5DC876;
+  --p4: #F2709C; --p5: #3BC9DB; --p6: #FFC234; --p7: #D9A066;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -75,7 +85,7 @@ main { flex: 1; overflow-y: auto; padding: 16px 16px 28px; overscroll-behavior: 
 
 /* Buttons */
 .btn { min-height: 46px; padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius); font-weight: 600; }
-.btn.primary { background: var(--accent); color: #FFFFFF; }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
 .btn.ghost { background: transparent; border-color: var(--line); }
 .btn.danger { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 .btn.wide { width: 100%; }

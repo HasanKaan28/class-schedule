@@ -7,10 +7,14 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowInsetsController;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -27,8 +31,13 @@ public class MainActivity extends Activity {
     private static final String SITE = "https://hasankaan28.github.io/class-schedule/";
     private static final String BUNDLED = "file:///android_asset/index.html";
     private static final int REQUEST_NOTIFICATIONS = 7;
+    private static final String PREF_THEME = "theme";
+    // Same as the light and dark --surface colours in web/styles.css.
+    private static final int SURFACE_LIGHT = 0xFFFFFFFF;
+    private static final int SURFACE_DARK = 0xFF151E29;
 
     private WebView webView;
+    private FrameLayout root;
 
     /** Storage shared by the online and bundled copies, so a student's timetable is always the same. */
     private static class NativeStore {
@@ -80,6 +89,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Lets the theme chosen in Settings ("system", "light" or "dark") recolour the status and navigation bars. */
+    private class UiBridge {
+        @JavascriptInterface
+        public void setTheme(String theme) {
+            getSharedPreferences("ui", MODE_PRIVATE).edit().putString(PREF_THEME, theme).apply();
+            runOnUiThread(() -> applyTheme(theme));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +111,7 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         webView.addJavascriptInterface(new NativeStore(getSharedPreferences("schedule", MODE_PRIVATE)), "AndroidStore");
         webView.addJavascriptInterface(new NotifyBridge(), "AndroidNotify");
+        webView.addJavascriptInterface(new UiBridge(), "AndroidUi");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -119,10 +138,12 @@ public class MainActivity extends Activity {
         });
 
         // Keeps the content clear of the status and navigation bars on edge-to-edge Android versions.
-        FrameLayout root = new FrameLayout(this);
+        root = new FrameLayout(this);
         root.setFitsSystemWindows(true);
         root.addView(webView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // The last chosen theme, so a dark choice does not flash white while the page loads.
+        applyTheme(getSharedPreferences("ui", MODE_PRIVATE).getString(PREF_THEME, "system"));
 
         if (savedInstanceState == null || webView.restoreState(savedInstanceState) == null) {
             webView.loadUrl(SITE);
@@ -141,6 +162,30 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_NOTIFICATIONS) {
             reportPermission();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void applyTheme(String theme) {
+        boolean phoneDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        boolean dark = "dark".equals(theme) || (!"light".equals(theme) && phoneDark);
+        int surface = dark ? SURFACE_DARK : SURFACE_LIGHT;
+        root.setBackgroundColor(surface);  // shows behind the bars on edge-to-edge Android versions
+        webView.setBackgroundColor(surface);
+        Window window = getWindow();
+        window.setStatusBarColor(surface);
+        window.setNavigationBarColor(surface);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController bars = window.getInsetsController();
+            int lightBars = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            if (bars != null) {
+                bars.setSystemBarsAppearance(dark ? 0 : lightBars, lightBars);
+            }
+        } else {
+            View decor = window.getDecorView();
+            int lightBars = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            int flags = decor.getSystemUiVisibility();
+            decor.setSystemUiVisibility(dark ? flags & ~lightBars : flags | lightBars);
         }
     }
 

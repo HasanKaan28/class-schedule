@@ -11,6 +11,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
+<script>
+  // Applies a theme chosen in Settings before the first paint (app.js keeps it up to date afterwards).
+  try {
+    var saved = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}').theme;
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  } catch (e) { /* no saved settings yet */ }
+</script>
 </head>
 <body>
 <header class="app-head">
@@ -75,6 +82,15 @@
         <button type="button" data-lang="en">English</button>
         <button type="button" data-lang="tr">Türkçe</button>
         <button type="button" data-lang="bs">Bosanski</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span data-i18n="theme"></span>
+      <div class="seg" role="group" id="themeGroup">
+        <button type="button" data-theme-choice="system"></button>
+        <button type="button" data-theme-choice="light"></button>
+        <button type="button" data-theme-choice="dark"></button>
       </div>
     </div>
 

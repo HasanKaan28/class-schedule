@@ -20,7 +20,9 @@
     }
   };
 
-  const DEFAULT_SETTINGS = { before: false, lead: 15, evening: false, eveningTime: '20:00' };
+  const DEFAULT_SETTINGS = { theme: 'system', before: false, lead: 15, evening: false, eveningTime: '20:00' };
+  const THEMES = ['system', 'light', 'dark'];
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
   const LEAD_CHOICES = [5, 10, 15, 30, 60];
 
   const state = {
@@ -486,9 +488,25 @@
     try { window.AndroidNotify.schedule(JSON.stringify(reminderList())); } catch (e) { /* older app without reminders */ }
   }
 
+  // "system" follows the phone; "light" and "dark" override it. The Android app also recolours its status bar.
+  function applyTheme() {
+    const theme = state.settings.theme, root = document.documentElement;
+    if (theme === 'light' || theme === 'dark') root.dataset.theme = theme; else delete root.dataset.theme;
+    const dark = theme === 'dark' || (theme !== 'light' && darkQuery.matches);
+    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = dark ? '#151E29' : '#FFFFFF'; });
+    if (window.AndroidUi) {
+      try { window.AndroidUi.setTheme(theme); } catch (e) { /* older app: the page still switches */ }
+    }
+  }
+
   function renderSettings() {
     const t = T(), s = state.settings;
     const native = !!window.AndroidNotify, oldApp = !native && !!window.AndroidStore;
+    document.querySelectorAll('[data-theme-choice]').forEach(b => {
+      b.textContent = t.themes[b.dataset.themeChoice];
+      b.setAttribute('aria-pressed', String(b.dataset.themeChoice === s.theme));
+    });
+    $('themeGroup').setAttribute('aria-label', t.theme);
     $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
     $('setBefore').checked = s.before;
     $('setEvening').checked = s.evening;
@@ -553,6 +571,12 @@
     if ('openSettings' in d) { renderSettings(); return showDialog($('settings')); }
     if (el.id === 'settingsClose') return closeDialog($('settings'));
     if (el.id === 'openNotifySettings') return window.AndroidNotify && window.AndroidNotify.openSettings();
+    if (d.themeChoice && THEMES.includes(d.themeChoice)) {
+      state.settings.theme = d.themeChoice;
+      store.set('settings', JSON.stringify(state.settings));
+      applyTheme();
+      return renderSettings();
+    }
     if (d.lang) return setLang(d.lang);
     if (d.tab) return setTab(d.tab);
     if (d.day) {
@@ -578,6 +602,7 @@
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
+  darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); }, 30000);
 
@@ -596,6 +621,7 @@
   };
 
   $('staffList').innerHTML = Object.keys(CATALOG.staff || {}).map(n => `<option value="${esc(n)}">`).join('');
+  applyTheme();
   setLang(state.lang);
   setTab('today');
 
