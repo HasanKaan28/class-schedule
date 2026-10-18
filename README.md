@@ -11,7 +11,7 @@ This is an unofficial student project. It is not made or endorsed by IUS.
 ## Install on Android
 
 1. On the phone, open the latest release: <https://github.com/HasanKaan28/class-schedule/releases/latest>
-2. Download `class-schedule-<version>.apk` and open it.
+2. Download `class-schedule.apk` (the same file as `class-schedule-<version>.apk`) and open it. Direct link to the newest version: <https://github.com/HasanKaan28/class-schedule/releases/latest/download/class-schedule.apk>
 3. Allow installing from this source when Android asks.
 
 You only need to do this once.

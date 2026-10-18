@@ -58,9 +58,17 @@ jobs:
           name: class-schedule-apk
           path: class-schedule-*.apk
 
+      # The fixed name keeps .../releases/latest/download/class-schedule.apk pointing at the newest APK
+      # (the club portal's download button uses it).
+      - name: Add a copy under a fixed name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cp class-schedule-*.apk class-schedule.apk
+
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: class-schedule-*.apk
+          files: |
+            class-schedule-*.apk
+            class-schedule.apk
           generate_release_notes: true
