@@ -1,8 +1,8 @@
 name: Collect eCampus data
 
-# eCampus asks for 10 seconds between requests and lists about 1,700 syllabi, so one run cannot read
-# them all. Each run reads for 4.5 hours, saves, and starts another run while some syllabi have never
-# been read. After that, a nightly run refreshes the oldest ones.
+# Looks up this term's courses (data/term-schedule.json) on eCampus, 10 seconds between requests as
+# eCampus asks. About 250 courses take a little over an hour. If a run ever hits its 4.5-hour budget,
+# it saves and starts another run for the syllabi it has not read yet.
 on:
   schedule:
     - cron: '17 1 * * *'

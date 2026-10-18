@@ -1,12 +1,13 @@
-"""Collects course and office-hour data from IUS eCampus into web/data/courses.js.
+"""Builds web/data/courses.js from this term's schedule plus course details from IUS eCampus.
 
 Usage:
-  python tools/collect_ecampus.py [--out web/data/courses.js] [--budget 270] [--delay 10] [--pages N] [--limit N]
+  python tools/collect_ecampus.py [--term data/term-schedule.json] [--out web/data/courses.js] [--budget 270] [--offline]
 
-Only public pages are read: the syllabus list, each syllabus, and the office-hours directory.
-eCampus asks crawlers for a 10-second delay (robots.txt) and lists about 1,700 syllabi, which is more
-than one CI job can read. So each run reads syllabi until its time budget is used up, never-read and
-oldest first, and keeps the earlier details of the rest. Standard library only, so it runs on a bare CI runner.
+Lecture times and rooms come from the official term schedule (data/term-schedule.json, made by
+tools/import_term_schedule.py). Only those courses are looked up on eCampus, which adds the syllabus link,
+ECTS, lecturers, assistants, tutorial and lab sections, and office hours. Only public pages are read, with
+the 10-second delay eCampus asks for in robots.txt. Each run reads syllabi until its time budget is used up,
+never-read and oldest first, and keeps the earlier details of the rest. Standard library only.
 """
 import argparse
 import json
@@ -295,50 +296,71 @@ def read_previous(out):
     return json.loads(match.group(1)) if match else {}
 
 
-def collect(args, previous):
+def merge_sections(term_course, syllabus_sections):
+    """Lecture times come from the official term schedule; tutorials and labs are only on eCampus."""
+    if term_course:
+        return term_course["sec"] + [s for s in syllabus_sections if s[1] != "lec"]
+    return syllabus_sections
+
+
+def collect(args, previous, term):
     deadline = time.monotonic() + args.budget * 60
     fetcher = Fetcher(args.delay)
     old_courses = previous.get("courses", {})
     fetched = dict(previous.get("fetched", {}))
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    term_courses = term["courses"] if term else {}
 
-    listing, seen = [], set()
-    for page in range(args.pages or 1000):
-        rows = [r for r in parse_syllabus_list(fetcher.get(f"/syllabi?page={page}")) if r["url"] not in seen]
-        if not rows:
-            break
-        seen.update(r["url"] for r in rows)
-        listing.extend(rows)
-        print(f"syllabus list page {page}: {len(rows)} courses", file=sys.stderr)
-    if len(listing) < len(old_courses) * 0.7 and not args.force:
-        sys.exit(f"Refusing to continue: eCampus lists {len(listing)} courses, the saved data has {len(old_courses)}.")
-
+    rows_by_code = {}
     staff = previous.get("staff", {})
-    if not args.limit:
-        found_staff = {}
-        for page in range(1000):
-            found = parse_office_hours(fetcher.get(f"/office-hours?page={page}"))
-            new = {k: v for k, v in found.items() if k not in found_staff}
-            if not new:
+    if not args.offline:
+        seen = set()
+        for page in range(args.pages or 1000):
+            rows = [r for r in parse_syllabus_list(fetcher.get(f"/syllabi?page={page}")) if r["url"] not in seen]
+            if not rows:
                 break
-            found_staff.update(new)
-            print(f"office hours page {page}: {len(found)} people", file=sys.stderr)
-        staff = found_staff or staff
+            seen.update(r["url"] for r in rows)
+            for row in rows:
+                if row["code"]:
+                    rows_by_code.setdefault(row["code"], row)
+            print(f"syllabus list page {page}: {len(rows)} courses", file=sys.stderr)
+        if not term and len(rows_by_code) < len(old_courses) * 0.7 and not args.force:
+            sys.exit(f"Refusing to continue: eCampus lists {len(rows_by_code)} courses, the saved data has {len(old_courses)}.")
 
-    # Every listed course keeps its last details until its syllabus is read again.
-    courses, rows_by_code = {}, {}
-    for row in listing:
-        if not row["code"] or row["code"] in courses:
-            continue
-        rows_by_code[row["code"]] = row
-        course = dict(old_courses.get(row["code"], {}))
-        course.update({"n": row["name"], "u": row["unit"], "url": row["url"]})
-        if row["ects"].isdigit():
-            course["ects"] = int(row["ects"])
-        courses[row["code"]] = course
+        if not args.limit:
+            found_staff = {}
+            for page in range(1000):
+                found = parse_office_hours(fetcher.get(f"/office-hours?page={page}"))
+                new = {k: v for k, v in found.items() if k not in found_staff}
+                if not new:
+                    break
+                found_staff.update(new)
+                print(f"office hours page {page}: {len(found)} people", file=sys.stderr)
+            staff = found_staff or staff
+
+    # With a term schedule only this term's courses are kept; otherwise everything eCampus lists.
+    codes = list(term_courses) or list(rows_by_code) or list(old_courses)
+
+    def listed(code):
+        course, row = {}, rows_by_code.get(code)
+        if row:
+            course.update({"n": row["name"], "u": row["unit"], "url": row["url"]})
+            if row["ects"].isdigit():
+                course["ects"] = int(row["ects"])
+        if code in term_courses:
+            course["n"] = term_courses[code]["n"]
+        return course
+
+    # Every course keeps its last eCampus details until its syllabus is read again.
+    courses = {}
+    for code in codes:
+        course = dict(old_courses.get(code, {}))
+        course.update(listed(code))
+        course["sec"] = merge_sections(term_courses.get(code), course.get("sec", []))
+        courses[code] = {k: v for k, v in course.items() if v not in (None, "", [])}
 
     # Never-read syllabi first, then the oldest; within that, first-year courses first.
-    queue = sorted(courses, key=lambda c: (fetched.get(c, ""), course_level(c), c))
+    queue = sorted((c for c in codes if c in rows_by_code), key=lambda c: (fetched.get(c, ""), course_level(c), c))
     if args.limit:
         queue = queue[: args.limit]
     done = 0
@@ -347,15 +369,14 @@ def collect(args, previous):
             print(f"Time budget used up after {done} syllabi.", file=sys.stderr)
             break
         row = rows_by_code[code]
-        course = {"n": row["name"], "u": row["unit"], "url": row["url"]}
-        if row["ects"].isdigit():
-            course["ects"] = int(row["ects"])
         try:
             details = parse_syllabus(fetcher.get(row["url"]))
+            course = listed(code)
             course.update({k: v for k, v in details.items() if v not in (None, "", [])})
+            course["sec"] = merge_sections(term_courses.get(code), details.get("sec", []))
             if "lec" not in course and row["holder"] and row["holder"] != "TBA":
                 course["lec"] = [{"n": row["holder"]}]
-            courses[code] = course
+            courses[code] = {k: v for k, v in course.items() if v not in (None, "", [])}
         except Exception as err:  # keep the previous details; the course is retried when it is oldest again
             print(f"  {code}: {err}", file=sys.stderr)
         fetched[code] = today
@@ -363,9 +384,15 @@ def collect(args, previous):
         print(f"[{done}/{len(queue)}] {code}: {len(courses[code].get('sec', []))} meetings", file=sys.stderr)
 
     fetched = {c: d for c, d in fetched.items() if c in courses}
-    remaining = sum(1 for c in courses if c not in fetched)
+    remaining = sum(1 for c in codes if c in rows_by_code and c not in fetched)
+    missing = [c for c in codes if c not in rows_by_code] if rows_by_code else []
+    if missing:
+        print(f"Not on eCampus: {', '.join(missing)}", file=sys.stderr)
     print(f"{len(courses)} courses ({remaining} not read yet), {len(staff)} staff, {fetcher.count} requests", file=sys.stderr)
-    payload = {"courses": dict(sorted(courses.items())), "staff": dict(sorted(staff.items())), "fetched": dict(sorted(fetched.items()))}
+    payload = {}
+    if term:
+        payload["term"] = {k: term[k] for k in ("term", "source", "updated")}
+    payload.update({"courses": dict(sorted(courses.items())), "staff": dict(sorted(staff.items())), "fetched": dict(sorted(fetched.items()))})
     return payload, (remaining if done else 0)
 
 
@@ -388,9 +415,12 @@ if __name__ == "__main__":
     parser.add_argument("--pages", type=int, help="only read this many syllabus list pages (for testing)")
     parser.add_argument("--limit", type=int, help="only read this many syllabi and skip office hours (for testing)")
     parser.add_argument("--force", action="store_true", help="continue even if eCampus lists far fewer courses than before")
+    parser.add_argument("--term", type=Path, default=Path("data/term-schedule.json"), help="term schedule from tools/import_term_schedule.py")
+    parser.add_argument("--offline", action="store_true", help="read nothing from eCampus; rebuild from the term schedule and the saved data")
     args = parser.parse_args()
     previous = {} if args.pages else read_previous(args.out)
-    payload, remaining = collect(args, previous)
+    term = json.loads(args.term.read_text(encoding="utf-8")) if args.term.exists() else None
+    payload, remaining = collect(args, previous, term)
     write(payload, previous, args.out)
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:

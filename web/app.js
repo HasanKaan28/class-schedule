@@ -292,12 +292,11 @@
     const t = T();
     const codes = [...new Set(sorted(state.classes).map(c => c.code))];
     $('courseList').innerHTML = codes.map(courseCard).join('');
-    if (CATALOG.generated) {
-      const date = new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(CATALOG.generated));
-      $('source').textContent = t.dataFrom(date);
-    } else {
-      $('source').textContent = t.noData;
-    }
+    const fmt = value => new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value));
+    const parts = [];
+    if (CATALOG.term) parts.push(t.termFrom(CATALOG.term.term, fmt(CATALOG.term.updated)));
+    if (CATALOG.generated) parts.push(t.dataFrom(fmt(CATALOG.generated)));
+    $('source').textContent = parts.length ? parts.join(' ') : t.noData;
   }
 
   // --- Editor ---------------------------------------------------------------------------------
@@ -327,20 +326,20 @@
     const t = T(), { code } = readCode(), i = info(code);
     const query = $('fCode').value.toUpperCase().replace(/\s+/g, ''), queryName = norm($('fCode').value);
     const list = $('codeSuggest');
-    if (suggest && query.length >= 2 && !i) {
+    let hits = [];
+    if (query.length >= 2 && !i) {
       const all = Object.entries(CATALOG.courses);
-      const hits = all.filter(([c]) => c.startsWith(query))
+      hits = all.filter(([c]) => c.startsWith(query))
         .concat(queryName.length >= 3 ? all.filter(([c, v]) => !c.startsWith(query) && norm(v.n).includes(queryName)) : [])
         .slice(0, 6);
-      list.innerHTML = hits.map(([c, v]) => `<li><button type="button" data-pick="${esc(c)}"><b>${esc(c)}</b> ${esc(v.n)}</button></li>`).join('');
-      list.hidden = !hits.length;
-    } else {
-      list.hidden = true;
     }
-    const known = Object.keys(CATALOG.courses).length > 0;
-    $('fCourseName').textContent = i ? `${i.n}${i.ects ? ` · ${i.ects} ${t.ects}` : ''}` : (code.length >= 4 && known ? t.unknownCourse : '');
+    list.innerHTML = hits.map(([c, v]) => `<li><button type="button" data-pick="${esc(c)}"><b>${esc(c)}</b> ${esc(v.n)}</button></li>`).join('');
+    list.hidden = !suggest || !hits.length;
+    // Only call a code unknown once nothing in the list starts with it.
+    const unknown = !i && code.length >= 4 && !hits.some(([c]) => c.startsWith(query)) && Object.keys(CATALOG.courses).length > 0;
+    $('fCourseName').textContent = i ? `${i.n}${i.ects ? ` · ${i.ects} ${t.ects}` : ''}` : (unknown ? t.unknownCourse : '');
     $('fCourseName').classList.toggle('muted', !i);
-    $('fNameWrap').hidden = !!i || code.length < 4;
+    $('fNameWrap').hidden = !unknown;
     const sections = i && i.sec ? i.sec : [];
     $('sectionPicker').hidden = !sections.length;
     $('sectionList').innerHTML = sections.map((s, index) => `
