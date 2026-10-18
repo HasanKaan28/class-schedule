@@ -6,7 +6,8 @@ This is an unofficial student project by the [IUS Engineering Club](https://iuse
 
 - **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
 - **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
-- Languages: English, Turkish and Bosnian (switch in the top right).
+- Languages: English, Turkish and Bosnian (in Settings, behind the gear at the top right).
+- Android app only: a reminder before each class and an evening summary of tomorrow's classes, each switched on in Settings.
 
 ## Install on Android
 
@@ -54,6 +55,7 @@ eCampus is sometimes out of date (a tutorial time can change before the syllabus
 | --- | --- | --- |
 | Web app | [`web/`](web) | Plain HTML, CSS and JavaScript. Deployed to GitHub Pages by [`pages.yml`](.github/workflows/pages.yml). A service worker keeps the last copy for offline use. |
 | Android app | [`app/`](app) | One Activity with a WebView ([`MainActivity.java`](app/src/main/java/io/github/hasankaan28/classschedule/MainActivity.java)). Loads the Pages site; with no internet on first launch it opens the copy of `web/` bundled in the APK. Stores the timetable in Android's SharedPreferences so both copies see the same data. |
+| Reminders | [`Reminders.java`](app/src/main/java/io/github/hasankaan28/classschedule/Reminders.java) | The web app builds a weekly list of notifications (day, time, title, text) in the chosen language and hands it to the app through a JavaScript bridge. The app sets an alarm for each, posts it on the "Class reminders" channel, re-arms it for the next week, and re-arms everything after a reboot, an app update or a clock change. Asks for notification permission (Android 13+) when a reminder is switched on. |
 | APK build | [`build.yml`](.github/workflows/build.yml) | Gradle 8.10.2, Android Gradle Plugin 8.7.3, JDK 17. Android 8 (API 26) or newer. A `v*` tag publishes a GitHub release. |
 | Signing | repository secrets | `SIGNING_KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` (`release`). Create a key with `python tools/make_signing_key.py <path outside the repo>/release.p12` (needs the `cryptography` package). |
 
@@ -81,4 +83,4 @@ python tools/collect_ecampus.py --pages 1 --limit 3 --out build/test-courses.js
 | WebView shell | Kotlin with Jetpack Compose | One code base for Android and the browser, testable in a desktop browser. |
 | English default with a Turkish and Bosnian switch | Follow the phone language | Requested. The choice is saved on the device. |
 
-Not in this version: class reminders, a home-screen widget, sharing a timetable with friends, or exporting it.
+Not in this version: a home-screen widget, sharing a timetable with friends, exporting it, or reminders in the browser version (GitHub Pages has no server to send them).

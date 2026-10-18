@@ -20,9 +20,14 @@
     }
   };
 
+  const DEFAULT_SETTINGS = { before: false, lead: 15, evening: false, eveningTime: '20:00' };
+  const LEAD_CHOICES = [5, 10, 15, 30, 60];
+
   const state = {
     lang: I18N[store.get('lang')] ? store.get('lang') : 'en',
     classes: loadClasses(),
+    settings: loadSettings(),
+    notifyPermission: window.AndroidNotify ? window.AndroidNotify.permission() : 'unsupported',
     tab: 'today',
     day: 1,
     followToday: true,
@@ -38,7 +43,15 @@
       return [];
     }
   }
-  const saveClasses = () => store.set('classes', JSON.stringify(state.classes));
+  function loadSettings() {
+    try {
+      return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(store.get('settings') || '{}'));
+    } catch (e) {
+      return Object.assign({}, DEFAULT_SETTINGS);
+    }
+  }
+  const saveClasses = () => { store.set('classes', JSON.stringify(state.classes)); syncReminders(); };
+  const saveSettings = () => { store.set('settings', JSON.stringify(state.settings)); syncReminders(); };
 
   // --- Helpers --------------------------------------------------------------------------------
 
@@ -437,6 +450,71 @@
     renderAll();
   }
 
+  // --- Settings and reminders -------------------------------------------------------------------
+
+  // Weekly notifications for the Android app: {day: 1-7, min: minutes after midnight, title, body}.
+  function reminderList() {
+    const t = T(), s = state.settings, list = [];
+    if (s.before) {
+      state.classes.forEach(c => {
+        let day = c.d, min = toMin(c.s) - s.lead;
+        if (min < 0) { min += 1440; day = day === 1 ? 7 : day - 1; }
+        list.push({
+          day, min,
+          title: t.reminderTitle(classLabel(c), c.t === 'lec' ? '' : t.types[c.t], s.lead),
+          body: [nameOf(c), `${c.s}–${c.e}`, c.room].filter(Boolean).join(' · ')
+        });
+      });
+    }
+    if (s.evening) {
+      [1, 2, 3, 4, 5, 6, 7].forEach(d => {
+        const classes = byDay(d);
+        if (!classes.length) return;
+        list.push({
+          day: d === 1 ? 7 : d - 1,
+          min: toMin(s.eveningTime),
+          title: t.tomorrowTitle(classes.length),
+          body: classes.map(c => `${c.s} ${classLabel(c)}${c.t === 'lec' ? '' : ' ' + t.types[c.t]}`).join(', ')
+        });
+      });
+    }
+    return list;
+  }
+
+  function syncReminders() {
+    if (!window.AndroidNotify) return;
+    try { window.AndroidNotify.schedule(JSON.stringify(reminderList())); } catch (e) { /* older app without reminders */ }
+  }
+
+  function renderSettings() {
+    const t = T(), s = state.settings;
+    const native = !!window.AndroidNotify, oldApp = !native && !!window.AndroidStore;
+    $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
+    $('setBefore').checked = s.before;
+    $('setEvening').checked = s.evening;
+    $('setEveningTime').value = s.eveningTime;
+    ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => { $(id).disabled = !native; });
+    $('setLead').closest('.field').classList.toggle('off', !native || !s.before);
+    $('setEveningTime').closest('.field').classList.toggle('off', !native || !s.evening);
+    const note = $('notifyNote');
+    note.hidden = native;
+    note.innerHTML = native ? '' : `${oldApp ? t.notifyUpdate : t.notifyWebOnly} <a href="https://github.com/HasanKaan28/class-schedule/releases/latest/download/class-schedule.apk">${t.getApp}</a>`;
+    $('permNote').hidden = !(native && (s.before || s.evening) && state.notifyPermission !== 'granted');
+  }
+
+  function onSettingChange(e) {
+    const s = state.settings, id = e.target.id;
+    if (id === 'setBefore') s.before = e.target.checked;
+    if (id === 'setEvening') s.evening = e.target.checked;
+    if (id === 'setLead') s.lead = Number(e.target.value);
+    if (id === 'setEveningTime' && e.target.value) s.eveningTime = e.target.value;
+    saveSettings();
+    if ((id === 'setBefore' || id === 'setEvening') && e.target.checked && state.notifyPermission !== 'granted') {
+      window.AndroidNotify.requestPermission();
+    }
+    renderSettings();
+  }
+
   // --- Shell ----------------------------------------------------------------------------------
 
   function renderAll() {
@@ -453,8 +531,11 @@
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T()[el.dataset.i18n]; });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
     $('langGroup').setAttribute('aria-label', T().language);
+    $('openSettings').setAttribute('aria-label', T().settings);
     if ($('editor').open) { renderSegments(); onCodeInput(false); }
+    renderSettings();
     renderAll();
+    syncReminders(); // notification texts follow the language
   }
 
   function setTab(tab) {
@@ -465,10 +546,13 @@
   }
 
   document.addEventListener('click', e => {
-    if (e.target.id === 'editor') return closeDialog($('editor')); // tap on the backdrop
+    if (e.target.classList.contains('sheet')) return closeDialog(e.target); // tap on the backdrop
     const el = e.target.closest('button');
     if (!el) return;
     const d = el.dataset;
+    if ('openSettings' in d) { renderSettings(); return showDialog($('settings')); }
+    if (el.id === 'settingsClose') return closeDialog($('settings'));
+    if (el.id === 'openNotifySettings') return window.AndroidNotify && window.AndroidNotify.openSettings();
     if (d.lang) return setLang(d.lang);
     if (d.tab) return setTab(d.tab);
     if (d.day) {
@@ -493,15 +577,21 @@
   $('editorForm').addEventListener('submit', e => { e.preventDefault(); saveEditor(); });
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
+  ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); }, 30000);
 
-  // Called by the Android back button. Returns true when the page handled it.
+  // Called by the Android app: the back button, and the notification permission after a prompt or a settings visit.
   window.app = {
     back() {
-      if ($('editor').open) { closeDialog($('editor')); return true; }
+      const open = ['editor', 'settings'].map($).find(dialog => dialog.open);
+      if (open) { closeDialog(open); return true; }
       if (state.tab !== 'today') { setTab('today'); return true; }
       return false;
+    },
+    onNotifyPermission(permission) {
+      state.notifyPermission = permission;
+      renderSettings();
     }
   };
 

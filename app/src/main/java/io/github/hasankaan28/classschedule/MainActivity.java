@@ -1,11 +1,15 @@
 package io.github.hasankaan28.classschedule;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceError;
@@ -22,6 +26,7 @@ import android.widget.FrameLayout;
 public class MainActivity extends Activity {
     private static final String SITE = "https://hasankaan28.github.io/class-schedule/";
     private static final String BUNDLED = "file:///android_asset/index.html";
+    private static final int REQUEST_NOTIFICATIONS = 7;
 
     private WebView webView;
 
@@ -44,9 +49,41 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Lets the settings screen schedule class reminders, which the WebView cannot do on its own. */
+    private class NotifyBridge {
+        @JavascriptInterface
+        public String permission() {
+            return notificationsAllowed() ? "granted" : "off";
+        }
+
+        @JavascriptInterface
+        public void requestPermission() {
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                        && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[] {Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATIONS);
+                } else {
+                    reportPermission();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void openSettings() {
+            runOnUiThread(() -> startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())));
+        }
+
+        @JavascriptInterface
+        public void schedule(String reminders) {
+            Reminders.save(MainActivity.this, reminders);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Reminders.createChannel(this);
 
         webView = new WebView(this);
         WebSettings settings = webView.getSettings();
@@ -55,6 +92,7 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);  // bundled assets still load; nothing else on the phone is reachable
         settings.setAllowContentAccess(false);
         webView.addJavascriptInterface(new NativeStore(getSharedPreferences("schedule", MODE_PRIVATE)), "AndroidStore");
+        webView.addJavascriptInterface(new NotifyBridge(), "AndroidNotify");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -88,6 +126,35 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null || webView.restoreState(savedInstanceState) == null) {
             webView.loadUrl(SITE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // The student may have just allowed or blocked notifications in Android settings.
+        reportPermission();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_NOTIFICATIONS) {
+            reportPermission();
+        }
+    }
+
+    private boolean notificationsAllowed() {
+        boolean runtime = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        return runtime && getSystemService(NotificationManager.class).areNotificationsEnabled();
+    }
+
+    private void reportPermission() {
+        if (webView != null) {
+            webView.evaluateJavascript(
+                    "window.app && app.onNotifyPermission && app.onNotifyPermission('" + (notificationsAllowed() ? "granted" : "off") + "')",
+                    null);
         }
     }
 

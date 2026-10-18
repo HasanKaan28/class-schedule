@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status bar icon: a timetable sheet with two blocks. Android draws it in one colour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6,4h12a2,2 0 0 1 2,2v12a2,2 0 0 1 -2,2h-12a2,2 0 0 1 -2,-2v-12a2,2 0 0 1 2,-2z M6,9v9h12v-9z M7.5,11h3v3h-3z M13.5,11h3v5h-3z" />
+</vector>

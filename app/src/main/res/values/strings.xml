@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Class Schedule</string>
+    <string name="channel_name">Class reminders</string>
+    <string name="channel_description">Reminders before your classes and a summary of tomorrow\'s classes</string>
 </resources>
