@@ -275,11 +275,16 @@
         <button type="button" class="link-btn" data-edit="${esc(c.id)}">${t.edit}</button>
       </li>`).join('');
     const people = peopleFor(code, entries);
+    // "Not on eCampus" only once the course has actually been looked up there.
+    const looked = CATALOG.fetched && CATALOG.fetched[code];
+    const ecampus = url
+      ? `<a class="ext" href="${esc(url)}" target="_blank" rel="noopener">eCampus ↗</a>`
+      : i ? `<span class="ext muted">${looked ? t.notOnEcampus : t.ecampusPending}</span>` : '';
     return `<li class="course ${colorClass(code)}">
       <div class="ch">
         <span class="sw"></span><span class="code">${esc(code)}</span>
         ${i && i.ects ? `<span class="ects">${i.ects} ${t.ects}</span>` : ''}
-        ${url ? `<a class="ext" href="${esc(url)}" target="_blank" rel="noopener">eCampus ↗</a>` : `<span class="ext muted">${t.notOnEcampus}</span>`}
+        ${ecampus}
       </div>
       ${name ? `<h3>${esc(name)}</h3>` : ''}
       ${i && i.u ? `<p class="unit">${esc(i.u)}</p>` : ''}
