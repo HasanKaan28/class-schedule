@@ -6,7 +6,7 @@ This is an unofficial student project. It is not made or endorsed by IUS.
 
 - **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
 - **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
-- Languages: English and Turkish (switch in the top right).
+- Languages: English, Turkish and Bosnian (switch in the top right).
 
 ## Install on Android
 
@@ -79,6 +79,6 @@ python tools/collect_ecampus.py --pages 1 --limit 3 --out build/test-courses.js
 | App loads its screens from GitHub Pages | Screens bundled only in the APK | Students install once; fixes and features reach everyone without a new APK. |
 | Bundled offline copy and native storage | Online only | The app opens with no connection, and the timetable is never lost when switching between copies. |
 | WebView shell | Kotlin with Jetpack Compose | One code base for Android and the browser, testable in a desktop browser. |
-| English default with Turkish switch | Follow the phone language | Requested. The choice is saved on the device. |
+| English default with a Turkish and Bosnian switch | Follow the phone language | Requested. The choice is saved on the device. |
 
 Not in this version: class reminders, a home-screen widget, sharing a timetable with friends, or exporting it.

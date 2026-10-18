@@ -21,7 +21,7 @@
   };
 
   const state = {
-    lang: store.get('lang') === 'tr' ? 'tr' : 'en',
+    lang: I18N[store.get('lang')] ? store.get('lang') : 'en',
     classes: loadClasses(),
     tab: 'today',
     day: 1,
