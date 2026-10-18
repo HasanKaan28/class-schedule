@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Same as the dark --surface in assets/styles.css -->
+    <!-- Same as the dark surface colour in assets/styles.css -->
     <color name="surface">#151E29</color>
 </resources>

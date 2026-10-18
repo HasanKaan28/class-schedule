@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Same as --surface in assets/styles.css -->
+    <!-- Same as the surface colour in assets/styles.css -->
     <color name="surface">#FFFFFF</color>
     <color name="ic_launcher_background">#1F5FD1</color>
 </resources>
