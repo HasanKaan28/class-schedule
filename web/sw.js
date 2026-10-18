@@ -1,7 +1,7 @@
 // Network first, so students get new screens and course data as soon as they are online.
 // Without a connection (or if it takes too long) the last saved copy is used.
 const CACHE = 'class-schedule-v1';
-const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'i18n.js', 'data/courses.js', 'manifest.webmanifest', 'icon.svg'];
+const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'i18n.js', 'data/courses.js', 'manifest.webmanifest', 'icon.svg', 'brand/iec-logo.png'];
 const TIMEOUT_MS = 5000;
 
 self.addEventListener('install', event => {

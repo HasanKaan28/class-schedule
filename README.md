@@ -2,7 +2,7 @@
 
 A weekly class schedule for students of the International University of Sarajevo. Add your classes once, and the app fills in course names, ECTS, lecturers, assistants, e-mail addresses and office hours from IUS eCampus. Tap a class to open its syllabus on eCampus.
 
-This is an unofficial student project. It is not made or endorsed by IUS.
+This is an unofficial student project by the [IUS Engineering Club](https://iusengclub.vercel.app). It is not made or endorsed by IUS.
 
 - **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
 - **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
