@@ -48,6 +48,11 @@ jobs:
           gradle --no-daemon assembleRelease
           cp app/build/outputs/apk/release/app-release.apk "class-schedule-${VERSION_NAME}.apk"
 
+      - name: Check the APK signature
+        run: |
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          "$APKSIGNER" verify --verbose --print-certs class-schedule-*.apk | grep -E "^Verified using|certificate DN"
+
       - uses: actions/upload-artifact@v4
         with:
           name: class-schedule-apk
