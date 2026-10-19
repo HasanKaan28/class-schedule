@@ -32,7 +32,14 @@
     notifyPermission: window.AndroidNotify ? window.AndroidNotify.permission() : 'unsupported',
     quiz: (() => {
       const cache = loadQuizCache();
-      return { list: cache.quizzes, fetchedAt: cache.at, status: cache.at ? 'cached' : 'idle', scope: store.get('quizScope') === 'all' ? 'all' : 'mine' };
+      return {
+        list: cache.quizzes,
+        fetchedAt: cache.at,
+        status: cache.at ? 'cached' : 'idle',
+        scope: store.get('quizScope') === 'all' ? 'all' : 'mine',
+        scores: loadScores(),
+        renderLater: false
+      };
     })(),
     tab: 'today',
     day: 1,
@@ -330,6 +337,7 @@
 
   const QUIZ_API = 'https://iusengclub.vercel.app/api';
   const QUIZ_FRESH_MS = 2 * 60 * 1000;
+  const QUIZ_KEEP_DAYS = 180; // past quizzes stay this long for their scores
   const QUIZ_COURSE = /^[A-Z]{2,5}\d{3}[A-Z]?/;
   const QUIZ_SECTION = /^[0-9A-Za-z]{1,4}$/;
 
@@ -359,7 +367,13 @@
       const response = await fetch(`${QUIZ_API}/quizzes`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      quiz.list = Array.isArray(data.quizzes) ? data.quizzes : [];
+      const fresh = Array.isArray(data.quizzes) ? data.quizzes : [];
+      // The API only returns quizzes from today on. Keep the earlier ones already seen on this device,
+      // so a week's quiz stays until Friday and past quizzes can still get a score.
+      const freshIds = new Set(fresh.map(q => q.id));
+      const today = isoDate(nowDate());
+      const kept = quiz.list.filter(q => q && !freshIds.has(q.id) && q.date < today && daysAway(q.date) >= -QUIZ_KEEP_DAYS);
+      quiz.list = kept.concat(fresh);
       quiz.fetchedAt = new Date().toISOString();
       quiz.status = 'ok';
       store.set('quizCache', JSON.stringify({ quizzes: quiz.list, at: quiz.fetchedAt }));
@@ -402,18 +416,63 @@
     });
   }
 
+  function quizIsMine(q, mine) {
+    const sections = mine.get(q.course);
+    return !!sections && (!q.section || !sections.size || sections.has(String(q.section).toUpperCase()));
+  }
+
   function visibleQuizzes(scope) {
     const mine = myCourseSections();
-    const forMe = q => {
-      const sections = mine.get(q.course);
-      return !!sections && (!q.section || !sections.size || sections.has(String(q.section).toUpperCase()));
-    };
     const valid = state.quiz.list.filter(q => q && q.course && q.date);
-    return (scope === 'all' ? mergeSections(valid) : valid.filter(forMe))
+    return (scope === 'all' ? mergeSections(valid) : valid.filter(q => quizIsMine(q, mine)))
       .filter(q => daysAway(quizEnd(q)) >= 0)
       .sort((a, b) => a.date.localeCompare(b.date)
         || (isWeekQuiz(b) - isWeekQuiz(a))
         || (a.time || '99').localeCompare(b.time || '99'));
+  }
+
+  // The student's finished quizzes, newest first, so a score can be added afterwards.
+  function pastQuizzes() {
+    const mine = myCourseSections();
+    return state.quiz.list
+      .filter(q => q && q.course && q.date && quizIsMine(q, mine) && daysAway(quizEnd(q)) < 0)
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.time || '').localeCompare(a.time || ''));
+  }
+
+  // --- Scores: kept on this device only, never sent anywhere -----------------------------------
+
+  function loadScores() {
+    try {
+      const scores = JSON.parse(store.get('quizScores') || '{}');
+      return scores && typeof scores === 'object' ? scores : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveScore(id, part, value) {
+    const scores = state.quiz.scores;
+    const entry = Object.assign({ got: '', max: '' }, scores[id], { [part]: value });
+    if (entry.got || entry.max) scores[id] = entry; else delete scores[id];
+    store.set('quizScores', JSON.stringify(scores));
+  }
+
+  // "18,5" -> "18.5"; letters and a second dot are dropped.
+  const cleanScore = value => value.replace(/,/g, '.').replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 6);
+
+  // The maximum the student used last time for this course, offered as the placeholder.
+  function usualMax(course) {
+    const scored = state.quiz.list.filter(q => q.course === course).map(q => state.quiz.scores[q.id]).find(s => s && s.max);
+    return scored ? scored.max : '';
+  }
+
+  function scoreInputs(q) {
+    const t = T(), s = state.quiz.scores[q.id] || {};
+    const attrs = part => `inputmode="decimal" maxlength="6" autocomplete="off" data-score-id="${esc(q.id)}" data-part="${part}"`;
+    return `<span class="score">
+      <input ${attrs('got')} value="${esc(s.got || '')}" placeholder="–" aria-label="${esc(t.score)}">
+      <span class="score-max">/ <input ${attrs('max')} value="${esc(s.max || '')}" placeholder="${esc(usualMax(q.course))}" aria-label="${esc(t.scoreMax)}"></span>
+    </span>`;
   }
 
   function quizDay(date) {
@@ -437,15 +496,23 @@
     return new Intl.DateTimeFormat(t.locale, sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(at);
   }
 
-  function quizHtml(q) {
-    const t = T(), name = (info(q.course) || {}).n || '';
+  // options.score: score inputs in the left column (My courses); options.dated: show the date (past list).
+  function quizHtml(q, options) {
+    const t = T(), opts = options || {}, name = (info(q.course) || {}).n || '';
     const color = state.classes.some(c => c.code === q.course) ? colorClass(q.course) : '';
-    const when = q.time ? esc(q.time) : isWeekQuiz(q) ? t.weekShort : '–';
-    return `<div class="quiz ${color}">
-      <span class="when${q.time ? '' : ' muted'}">${when}</span>
+    const meta = [];
+    let left = `<span class="when${q.time ? '' : ' muted'}">${q.time ? esc(q.time) : isWeekQuiz(q) ? t.weekShort : '–'}</span>`;
+    if (opts.score) {
+      left = scoreInputs(q);
+      if (opts.dated) meta.push(quizHeading(q).label);
+      if (q.time) meta.push(q.time);
+    }
+    if (name) meta.push(name);
+    return `<div class="quiz ${color}${opts.score ? ' scored' : ''}">
+      ${left}
       <span class="what">
         <span class="top"><span class="code">${esc(q.course)}${q.section ? '.' + esc(q.section) : ''}</span><span class="nm">${esc(q.title || t.quiz)}</span></span>
-        ${name ? `<span class="meta">${esc(name)}</span>` : ''}
+        ${meta.length ? `<span class="meta">${meta.map(esc).join(' · ')}</span>` : ''}
         ${q.note ? `<span class="meta">${esc(q.note)}</span>` : ''}
       </span>
     </div>`;
@@ -453,6 +520,10 @@
 
   function renderQuizzes() {
     const t = T(), quiz = state.quiz;
+    // Never redraw under a student who is typing a score; redraw when they leave the field.
+    const active = document.activeElement;
+    if (active && active.dataset && active.dataset.scoreId) { quiz.renderLater = true; return; }
+    quiz.renderLater = false;
     document.querySelectorAll('[data-quiz-scope]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.quizScope === quiz.scope)));
     $('quizScope').setAttribute('aria-label', t.upcomingQuizzes);
     $('quizStatus').textContent =
@@ -461,13 +532,15 @@
       : quiz.status === 'error' ? t.quizUnavailable
       : quiz.fetchedAt ? t.quizUpdated(stamp(quiz.fetchedAt)) : '';
 
+    const mineScope = quiz.scope === 'mine';
     const list = visibleQuizzes(quiz.scope);
+    const past = mineScope ? pastQuizzes() : [];
+    let html = '';
     if (!list.length) {
       const message = quiz.status === 'error' || (quiz.status === 'loading' && !quiz.fetchedAt) ? ''
-        : quiz.scope === 'all' ? t.noQuizzesAll
+        : !mineScope ? t.noQuizzesAll
         : state.classes.length ? t.noQuizzesMine : t.noClassesForQuizzes;
-      $('quizList').innerHTML = message ? `<p class="empty">${message}</p>` : '';
-      return;
+      html += message ? `<p class="empty">${message}</p>` : '';
     }
     // One heading per day, and one per week for the quizzes that only name a week.
     const groups = [];
@@ -476,10 +549,18 @@
       const last = groups[groups.length - 1];
       if (last && last.key === key) last.items.push(q); else groups.push({ key, heading: quizHeading(q), items: [q] });
     });
-    $('quizList').innerHTML = groups.map(({ heading, items }) => `<section class="quiz-day">
+    html += groups.map(({ heading, items }) => `<section class="quiz-day">
         <h3>${esc(heading.relative || heading.label)}${heading.relative ? ` <span>${esc(heading.label)}</span>` : ''}</h3>
-        ${items.map(quizHtml).join('')}
+        ${items.map(q => quizHtml(q, { score: mineScope })).join('')}
       </section>`).join('');
+    if (past.length) {
+      html += `<section class="quiz-day past">
+        <h3>${t.pastQuizzes}</h3>
+        ${past.map(q => quizHtml(q, { score: true, dated: true })).join('')}
+      </section>`;
+    }
+    if (mineScope && (list.length || past.length)) html += `<p class="hint">${t.scoreHint}</p>`;
+    $('quizList').innerHTML = html;
   }
 
   // Today screen: the student's quizzes in the next seven days, and this week's quizzes all week.
@@ -890,6 +971,17 @@
   $('editorForm').addEventListener('submit', e => { e.preventDefault(); saveEditor(); });
   $('reportForm').addEventListener('submit', e => { e.preventDefault(); sendReport(); });
   $('qCourse').addEventListener('change', onReportCourse);
+  $('quizList').addEventListener('input', e => {
+    const input = e.target;
+    if (!input.dataset.scoreId) return;
+    const clean = cleanScore(input.value);
+    if (clean !== input.value) input.value = clean;
+    saveScore(input.dataset.scoreId, input.dataset.part, clean);
+  });
+  $('quizList').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.scoreId) e.target.blur(); });
+  $('quizList').addEventListener('focusout', e => {
+    if (e.target.dataset.scoreId && state.quiz.renderLater) setTimeout(renderQuizzes, 0);
+  });
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
