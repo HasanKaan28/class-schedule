@@ -47,6 +47,7 @@
       <button type="button" class="btn primary" data-add data-i18n="addClass"></button>
     </section>
     <section class="status" id="status" aria-live="polite" hidden></section>
+    <button type="button" class="quiz-soon" id="quizSoon" data-goto="quizzes" hidden></button>
     <div class="chips" id="chips"></div>
     <h2 class="day-title" id="dayTitle"></h2>
     <p class="hint" id="dayHint" hidden></p>
@@ -59,6 +60,20 @@
     <p class="hint" data-i18n="tapHint"></p>
   </section>
 
+  <section class="view" id="view-quizzes" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
+    <div class="quiz-head">
+      <h2 data-i18n="upcomingQuizzes"></h2>
+      <div class="seg" role="group" id="quizScope">
+        <button type="button" data-quiz-scope="mine" data-i18n="myCourses"></button>
+        <button type="button" data-quiz-scope="all" data-i18n="allCourses"></button>
+      </div>
+    </div>
+    <button type="button" class="btn primary wide" data-report data-i18n="reportQuiz"></button>
+    <p class="hint" id="quizStatus" aria-live="polite"></p>
+    <div class="quiz-list" id="quizList"></div>
+    <p class="source" data-i18n="quizSource"></p>
+  </section>
+
   <section class="view" id="view-courses" role="tabpanel" aria-labelledby="tab-courses" hidden>
     <button type="button" class="btn primary wide" data-add data-i18n="addClass"></button>
     <ul class="courses" id="courseList"></ul>
@@ -69,8 +84,49 @@
 <nav class="tabs" role="tablist">
   <button type="button" role="tab" id="tab-today" data-tab="today" data-i18n="today"></button>
   <button type="button" role="tab" id="tab-week" data-tab="week" data-i18n="week"></button>
+  <button type="button" role="tab" id="tab-quizzes" data-tab="quizzes" data-i18n="quizzes"></button>
   <button type="button" role="tab" id="tab-courses" data-tab="courses" data-i18n="courses"></button>
 </nav>
+
+<dialog id="report" class="sheet" aria-labelledby="reportTitle">
+  <form id="reportForm" class="sheet-body" novalidate>
+    <h2 id="reportTitle" data-i18n="reportQuiz"></h2>
+    <label class="field">
+      <span data-i18n="qCourse"></span>
+      <select id="qCourse"></select>
+    </label>
+    <label class="field" id="qOtherWrap" hidden>
+      <span data-i18n="fCode"></span>
+      <input id="qOther" lang="en" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CS103">
+    </label>
+    <div class="row2">
+      <label class="field"><span data-i18n="fSection"></span><input id="qSection" autocomplete="off" maxlength="4" placeholder="2"></label>
+      <label class="field"><span data-i18n="qTitle"></span><input id="qTitle" autocomplete="off" maxlength="60" placeholder="Quiz 2"></label>
+    </div>
+    <div class="row2">
+      <label class="field"><span data-i18n="qDate"></span><input type="date" id="qDate"></label>
+      <label class="field"><span data-i18n="qTime"></span><input type="time" id="qTime" step="300"></label>
+    </div>
+    <label class="field">
+      <span data-i18n="qNote"></span>
+      <textarea id="qNote" rows="2" maxlength="300"></textarea>
+    </label>
+    <label class="field">
+      <span data-i18n="qName"></span>
+      <input id="qName" autocomplete="name" maxlength="80">
+      <small class="hint" data-i18n="qNameHint"></small>
+    </label>
+    <!-- Honeypot: people leave it empty; the server ignores reports that fill it. -->
+    <input class="hp" id="qWebsite" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="error" id="qError" role="alert" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="qCancel" data-i18n="cancel"></button>
+      <button type="submit" class="btn primary" id="qSend" data-i18n="send"></button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <dialog id="settings" class="sheet" aria-labelledby="settingsTitle">
   <div class="sheet-body">

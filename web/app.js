@@ -30,6 +30,10 @@
     classes: loadClasses(),
     settings: loadSettings(),
     notifyPermission: window.AndroidNotify ? window.AndroidNotify.permission() : 'unsupported',
+    quiz: (() => {
+      const cache = loadQuizCache();
+      return { list: cache.quizzes, fetchedAt: cache.at, status: cache.at ? 'cached' : 'idle', scope: store.get('quizScope') === 'all' ? 'all' : 'mine' };
+    })(),
     tab: 'today',
     day: 1,
     followToday: true,
@@ -193,9 +197,11 @@
     if (empty) {
       $('status').hidden = true;
       $('dayHint').hidden = true;
+      $('quizSoon').hidden = true;
       return;
     }
     renderStatus();
+    renderQuizSoon();
     renderChips();
     renderTimeline();
   }
@@ -317,6 +323,245 @@
     if (CATALOG.term) parts.push(t.termFrom(CATALOG.term.term, fmt(CATALOG.term.updated)));
     if (CATALOG.generated) parts.push(t.dataFrom(fmt(CATALOG.generated)));
     $('source').textContent = parts.length ? parts.join(' ') : t.noData;
+  }
+
+  // --- Quizzes --------------------------------------------------------------------------------
+  // Students report quizzes to the club portal; only quizzes the club approved come back from the API.
+
+  const QUIZ_API = 'https://iusengclub.vercel.app/api';
+  const QUIZ_FRESH_MS = 2 * 60 * 1000;
+  const QUIZ_COURSE = /^[A-Z]{2,5}\d{3}[A-Z]?/;
+  const QUIZ_SECTION = /^[0-9A-Za-z]{1,4}$/;
+
+  const nowDate = () => (isNaN(pinned) ? new Date() : new Date(pinned.getTime()));
+  const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const dateOf = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const dayNumber = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; };
+  const daysAway = s => dayNumber(s) - dayNumber(isoDate(nowDate()));
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+  function loadQuizCache() {
+    try {
+      const cache = JSON.parse(store.get('quizCache') || 'null');
+      return cache && Array.isArray(cache.quizzes) ? cache : { quizzes: [], at: null };
+    } catch (e) {
+      return { quizzes: [], at: null };
+    }
+  }
+
+  async function loadQuizzes(force) {
+    const quiz = state.quiz;
+    if (quiz.status === 'loading') return;
+    if (!force && quiz.status === 'ok' && Date.now() - Date.parse(quiz.fetchedAt) < QUIZ_FRESH_MS) return;
+    quiz.status = 'loading';
+    renderQuizzes();
+    try {
+      const response = await fetch(`${QUIZ_API}/quizzes`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      quiz.list = Array.isArray(data.quizzes) ? data.quizzes : [];
+      quiz.fetchedAt = new Date().toISOString();
+      quiz.status = 'ok';
+      store.set('quizCache', JSON.stringify({ quizzes: quiz.list, at: quiz.fetchedAt }));
+    } catch (e) {
+      quiz.status = quiz.fetchedAt ? 'offline' : 'error'; // the saved list stays on screen
+    }
+    renderQuizzes();
+    renderQuizSoon();
+  }
+
+  // Course code -> sections the student entered (empty set: any section).
+  function myCourseSections() {
+    const map = new Map();
+    state.classes.forEach(c => {
+      const code = (c.code.match(QUIZ_COURSE) || [c.code])[0];
+      if (!map.has(code)) map.set(code, new Set());
+      if (c.sec) map.get(code).add(String(c.sec).toUpperCase());
+    });
+    return map;
+  }
+
+  function visibleQuizzes(scope) {
+    const mine = myCourseSections();
+    const forMe = q => {
+      const sections = mine.get(q.course);
+      return !!sections && (!q.section || !sections.size || sections.has(String(q.section).toUpperCase()));
+    };
+    return state.quiz.list
+      .filter(q => q && q.course && q.date && daysAway(q.date) >= 0)
+      .filter(q => scope === 'all' || forMe(q))
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '99').localeCompare(b.time || '99'));
+  }
+
+  function quizDay(date) {
+    const t = T(), away = daysAway(date);
+    const label = new Intl.DateTimeFormat(t.locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(dateOf(date));
+    return { label, relative: away === 0 ? t.todayWord : away === 1 ? t.tomorrow : '' };
+  }
+
+  function stamp(iso) {
+    const t = T(), at = new Date(iso);
+    const sameDay = isoDate(at) === isoDate(new Date());
+    return new Intl.DateTimeFormat(t.locale, sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(at);
+  }
+
+  function quizHtml(q) {
+    const t = T(), name = (info(q.course) || {}).n || '';
+    const color = state.classes.some(c => c.code === q.course) ? colorClass(q.course) : '';
+    const details = [name, q.section ? '' : t.allSections].filter(Boolean).map(esc).join(' · ');
+    return `<div class="quiz ${color}">
+      <span class="when${q.time ? '' : ' muted'}">${q.time ? esc(q.time) : '–'}</span>
+      <span class="what">
+        <span class="top"><span class="code">${esc(q.course)}${q.section ? '.' + esc(q.section) : ''}</span><span class="nm">${esc(q.title || t.quiz)}</span></span>
+        ${details ? `<span class="meta">${details}</span>` : ''}
+        ${q.note ? `<span class="meta">${esc(q.note)}</span>` : ''}
+      </span>
+    </div>`;
+  }
+
+  function renderQuizzes() {
+    const t = T(), quiz = state.quiz;
+    document.querySelectorAll('[data-quiz-scope]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.quizScope === quiz.scope)));
+    $('quizScope').setAttribute('aria-label', t.upcomingQuizzes);
+    $('quizStatus').textContent =
+      quiz.status === 'loading' && !quiz.fetchedAt ? t.quizLoading
+      : quiz.status === 'offline' ? t.quizOffline(stamp(quiz.fetchedAt))
+      : quiz.status === 'error' ? t.quizUnavailable
+      : quiz.fetchedAt ? t.quizUpdated(stamp(quiz.fetchedAt)) : '';
+
+    const list = visibleQuizzes(quiz.scope);
+    if (!list.length) {
+      const message = quiz.status === 'error' || (quiz.status === 'loading' && !quiz.fetchedAt) ? ''
+        : quiz.scope === 'all' ? t.noQuizzesAll
+        : state.classes.length ? t.noQuizzesMine : t.noClassesForQuizzes;
+      $('quizList').innerHTML = message ? `<p class="empty">${message}</p>` : '';
+      return;
+    }
+    const days = [];
+    list.forEach(q => {
+      const last = days[days.length - 1];
+      if (last && last.date === q.date) last.items.push(q); else days.push({ date: q.date, items: [q] });
+    });
+    $('quizList').innerHTML = days.map(day => {
+      const { label, relative } = quizDay(day.date);
+      return `<section class="quiz-day">
+        <h3>${esc(relative || label)}${relative ? ` <span>${esc(label)}</span>` : ''}</h3>
+        ${day.items.map(quizHtml).join('')}
+      </section>`;
+    }).join('');
+  }
+
+  // Today screen: the student's quizzes in the next seven days.
+  function renderQuizSoon() {
+    const t = T(), el = $('quizSoon');
+    const soon = visibleQuizzes('mine').filter(q => daysAway(q.date) <= 7);
+    el.hidden = !soon.length || !state.classes.length;
+    if (el.hidden) return;
+    const when = q => quizDay(q.date).relative || new Intl.DateTimeFormat(t.locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(dateOf(q.date));
+    el.innerHTML = `<span class="lbl">${t.upcomingQuizzes}</span>
+      ${soon.slice(0, 3).map(q => `<span class="row"><b>${esc(q.course)}</b> ${esc(q.title || t.quiz)} · ${esc(when(q))}${q.time ? ' ' + esc(q.time) : ''}</span>`).join('')}
+      <span class="more">${t.seeAll} →</span>`;
+  }
+
+  function deviceId() {
+    let id = store.get('deviceId');
+    if (!/^[A-Za-z0-9_-]{8,64}$/.test(id || '')) {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      id = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      store.set('deviceId', id);
+    }
+    return id;
+  }
+
+  function onReportCourse() {
+    const code = $('qCourse').value;
+    $('qOtherWrap').hidden = !!code;
+    // The lecture section first, otherwise any section the student entered for this course.
+    const withSection = state.classes.filter(c => c.code === code && c.sec);
+    const pick = withSection.find(c => c.t === 'lec') || withSection[0];
+    $('qSection').value = pick ? pick.sec : '';
+  }
+
+  function openReport() {
+    const t = T(), today = nowDate();
+    const codes = [...new Set(sorted(state.classes).map(c => c.code))];
+    $('qCourse').innerHTML = codes.map(c => `<option value="${esc(c)}">${esc(c)}${info(c) ? ' · ' + esc(info(c).n) : ''}</option>`).join('')
+      + `<option value="">${t.otherCourse}</option>`;
+    $('qCourse').value = codes[0] || '';
+    ['qOther', 'qTitle', 'qTime', 'qNote', 'qWebsite', 'qDate'].forEach(id => { $(id).value = ''; });
+    $('qName').value = store.get('reporterName') || '';
+    $('qDate').min = isoDate(addDays(today, -1));
+    $('qDate').max = isoDate(addDays(today, 150));
+    $('qError').hidden = true;
+    $('qSend').disabled = false;
+    $('qSend').textContent = t.send;
+    onReportCourse();
+    showDialog($('report'));
+  }
+
+  function reportError(message) {
+    $('qError').textContent = message;
+    $('qError').hidden = !message;
+  }
+
+  async function sendReport() {
+    const t = T();
+    const course = (($('qCourse').value || $('qOther').value).toUpperCase().replace(/\s+/g, '').match(QUIZ_COURSE) || [''])[0];
+    const section = $('qSection').value.trim();
+    const date = $('qDate').value;
+    const away = date ? daysAway(date) : NaN;
+    const error = !course ? t.errQuizCourse
+      : section && !QUIZ_SECTION.test(section) ? t.errQuizSection
+      : !(away >= -1 && away <= 150) ? t.errQuizDate : '';
+    reportError(error);
+    if (error) return;
+
+    const body = {
+      course,
+      section: section || null,
+      title: $('qTitle').value.trim() || null,
+      date,
+      time: $('qTime').value || null,
+      note: $('qNote').value.trim() || null,
+      name: $('qName').value.trim() || null,
+      device: deviceId(),
+      website: $('qWebsite').value
+    };
+    store.set('reporterName', body.name || '');
+    $('qSend').disabled = true;
+    $('qSend').textContent = t.sending;
+    let problem = '';
+    try {
+      const response = await fetch(`${QUIZ_API}/quiz-reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        problem = response.status === 429 ? t.errRate
+          : data.error === 'date_out_of_range' ? t.errQuizDate
+          : response.status === 503 ? t.errNotReady
+          : t.errInvalid;
+      }
+    } catch (e) {
+      problem = t.errNetwork;
+    }
+    $('qSend').disabled = false;
+    $('qSend').textContent = t.send;
+    if (problem) return reportError(problem);
+    closeDialog($('report'));
+    toast(t.reportSent);
+  }
+
+  let toastTimer = 0;
+  function toast(message) {
+    const el = $('toast');
+    el.textContent = message;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 6000);
   }
 
   // --- Editor ---------------------------------------------------------------------------------
@@ -540,6 +785,7 @@
     renderToday();
     renderWeek();
     renderCourses();
+    renderQuizzes();
   }
 
   function setLang(lang) {
@@ -561,6 +807,7 @@
     document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
     document.querySelectorAll('.view').forEach(v => { v.hidden = v.id !== `view-${tab}`; });
     $('main').scrollTop = 0;
+    if (tab === 'quizzes') loadQuizzes(false);
   }
 
   document.addEventListener('click', e => {
@@ -579,6 +826,14 @@
     }
     if (d.lang) return setLang(d.lang);
     if (d.tab) return setTab(d.tab);
+    if (d.goto) return setTab(d.goto);
+    if ('report' in d) return openReport();
+    if (d.quizScope) {
+      state.quiz.scope = d.quizScope === 'all' ? 'all' : 'mine';
+      store.set('quizScope', state.quiz.scope);
+      return renderQuizzes();
+    }
+    if (el.id === 'qCancel') return closeDialog($('report'));
     if (d.day) {
       state.day = Number(d.day);
       state.followToday = state.day === defaultDay(clock().day);
@@ -599,17 +854,19 @@
   });
 
   $('editorForm').addEventListener('submit', e => { e.preventDefault(); saveEditor(); });
+  $('reportForm').addEventListener('submit', e => { e.preventDefault(); sendReport(); });
+  $('qCourse').addEventListener('change', onReportCourse);
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
   darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); loadQuizzes(false); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); }, 30000);
 
   // Called by the Android app: the back button, and the notification permission after a prompt or a settings visit.
   window.app = {
     back() {
-      const open = ['editor', 'settings'].map($).find(dialog => dialog.open);
+      const open = ['editor', 'settings', 'report'].map($).find(dialog => dialog.open);
       if (open) { closeDialog(open); return true; }
       if (state.tab !== 'today') { setTab('today'); return true; }
       return false;
@@ -624,6 +881,7 @@
   applyTheme();
   setLang(state.lang);
   setTab('today');
+  loadQuizzes(false);
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => { /* the app still works without offline caching */ });

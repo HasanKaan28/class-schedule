@@ -27,6 +27,7 @@ You only need to do this once.
 
 - **Today** shows the class happening now or the next one, and the chosen day's classes with the free gaps between them.
 - **Week** shows Monday to Friday (and Saturday if you have classes then).
+- **Quizzes** lists upcoming quizzes for your courses and sections (or for all courses). Tap **Report a quiz** to tell the club about one; it appears for everyone once the club has checked it. Your next quizzes also show on Today.
 - **Courses** lists each course with its instructors and office hours. Edit or delete classes here.
 
 Your timetable is stored only on your phone (or in your browser). It is never uploaded.
@@ -56,6 +57,7 @@ eCampus is sometimes out of date (a tutorial time can change before the syllabus
 | --- | --- | --- |
 | Web app | [`web/`](web) | Plain HTML, CSS and JavaScript. Deployed to GitHub Pages by [`pages.yml`](.github/workflows/pages.yml). A service worker keeps the last copy for offline use. |
 | Android app | [`app/`](app) | One Activity with a WebView ([`MainActivity.java`](app/src/main/java/io/github/hasankaan28/classschedule/MainActivity.java)). Loads the Pages site; with no internet on first launch it opens the copy of `web/` bundled in the APK. Stores the timetable in Android's SharedPreferences so both copies see the same data. |
+| Quizzes | [IUS Engineering Club portal](https://iusengclub.vercel.app) | `GET /api/quizzes` returns approved upcoming quizzes; `POST /api/quiz-reports` sends a student's report for review (a random per-device id limits spam, and the reporter's name is optional). The app keeps the last list for offline use. |
 | Reminders | [`Reminders.java`](app/src/main/java/io/github/hasankaan28/classschedule/Reminders.java) | The web app builds a weekly list of notifications (day, time, title, text) in the chosen language and hands it to the app through a JavaScript bridge. The app sets an alarm for each, posts it on the "Class reminders" channel, re-arms it for the next week, and re-arms everything after a reboot, an app update or a clock change. Asks for notification permission (Android 13+) when a reminder is switched on. |
 | APK build | [`build.yml`](.github/workflows/build.yml) | Gradle 8.10.2, Android Gradle Plugin 8.7.3, JDK 17. Android 8 (API 26) or newer. A `v*` tag publishes a GitHub release. |
 | Signing | repository secrets | `SIGNING_KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` (`release`). Create a key with `python tools/make_signing_key.py <path outside the repo>/release.p12` (needs the `cryptography` package). |
