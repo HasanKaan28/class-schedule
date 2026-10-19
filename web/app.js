@@ -381,16 +381,39 @@
     return map;
   }
 
+  // A quiz with no time on a Monday stands for its whole week (Monday to Friday): syllabi only name the week.
+  const mondayOf = date => { const d = dateOf(date); return isoDate(addDays(d, -((d.getDay() + 6) % 7))); };
+  const isWeekQuiz = q => !q.time && dateOf(q.date).getDay() === 1;
+  const quizEnd = q => (isWeekQuiz(q) ? isoDate(addDays(dateOf(q.date), 4)) : q.date);
+
+  // "All courses" ignores sections: the same quiz held on different days by different sections becomes one entry for that week.
+  function mergeSections(list) {
+    const groups = new Map();
+    list.forEach(q => {
+      const key = [q.course, (q.title || '').trim().toLowerCase(), mondayOf(q.date)].join('|');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(q);
+    });
+    return [...groups.values()].map(rows => {
+      const first = rows[0];
+      if (rows.every(r => r.date === first.date && (r.time || '') === (first.time || ''))) return Object.assign({}, first, { section: null });
+      const note = (rows.find(r => r.note) || {}).note || null;
+      return Object.assign({}, first, { section: null, date: mondayOf(first.date), time: null, note });
+    });
+  }
+
   function visibleQuizzes(scope) {
     const mine = myCourseSections();
     const forMe = q => {
       const sections = mine.get(q.course);
       return !!sections && (!q.section || !sections.size || sections.has(String(q.section).toUpperCase()));
     };
-    return state.quiz.list
-      .filter(q => q && q.course && q.date && daysAway(q.date) >= 0)
-      .filter(q => scope === 'all' || forMe(q))
-      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '99').localeCompare(b.time || '99'));
+    const valid = state.quiz.list.filter(q => q && q.course && q.date);
+    return (scope === 'all' ? mergeSections(valid) : valid.filter(forMe))
+      .filter(q => daysAway(quizEnd(q)) >= 0)
+      .sort((a, b) => a.date.localeCompare(b.date)
+        || (isWeekQuiz(b) - isWeekQuiz(a))
+        || (a.time || '99').localeCompare(b.time || '99'));
   }
 
   function quizDay(date) {
@@ -398,6 +421,15 @@
     const label = new Intl.DateTimeFormat(t.locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(dateOf(date));
     return { label, relative: away === 0 ? t.todayWord : away === 1 ? t.tomorrow : '' };
   }
+
+  function quizWeek(date) {
+    const t = T(), start = dateOf(date), end = addDays(start, 4), away = daysAway(date);
+    const format = new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'long' });
+    const range = format.formatRange ? format.formatRange(start, end) : `${format.format(start)} – ${format.format(end)}`;
+    return { label: t.weekOf(range), relative: away <= 0 ? t.thisWeek : away <= 7 ? t.nextWeek : '' };
+  }
+
+  const quizHeading = q => (isWeekQuiz(q) ? quizWeek(q.date) : quizDay(q.date));
 
   function stamp(iso) {
     const t = T(), at = new Date(iso);
@@ -408,12 +440,12 @@
   function quizHtml(q) {
     const t = T(), name = (info(q.course) || {}).n || '';
     const color = state.classes.some(c => c.code === q.course) ? colorClass(q.course) : '';
-    const details = [name, q.section ? '' : t.allSections].filter(Boolean).map(esc).join(' · ');
+    const when = q.time ? esc(q.time) : isWeekQuiz(q) ? t.weekShort : '–';
     return `<div class="quiz ${color}">
-      <span class="when${q.time ? '' : ' muted'}">${q.time ? esc(q.time) : '–'}</span>
+      <span class="when${q.time ? '' : ' muted'}">${when}</span>
       <span class="what">
         <span class="top"><span class="code">${esc(q.course)}${q.section ? '.' + esc(q.section) : ''}</span><span class="nm">${esc(q.title || t.quiz)}</span></span>
-        ${details ? `<span class="meta">${details}</span>` : ''}
+        ${name ? `<span class="meta">${esc(name)}</span>` : ''}
         ${q.note ? `<span class="meta">${esc(q.note)}</span>` : ''}
       </span>
     </div>`;
@@ -437,27 +469,29 @@
       $('quizList').innerHTML = message ? `<p class="empty">${message}</p>` : '';
       return;
     }
-    const days = [];
+    // One heading per day, and one per week for the quizzes that only name a week.
+    const groups = [];
     list.forEach(q => {
-      const last = days[days.length - 1];
-      if (last && last.date === q.date) last.items.push(q); else days.push({ date: q.date, items: [q] });
+      const key = (isWeekQuiz(q) ? 'week ' : 'day ') + q.date;
+      const last = groups[groups.length - 1];
+      if (last && last.key === key) last.items.push(q); else groups.push({ key, heading: quizHeading(q), items: [q] });
     });
-    $('quizList').innerHTML = days.map(day => {
-      const { label, relative } = quizDay(day.date);
-      return `<section class="quiz-day">
-        <h3>${esc(relative || label)}${relative ? ` <span>${esc(label)}</span>` : ''}</h3>
-        ${day.items.map(quizHtml).join('')}
-      </section>`;
-    }).join('');
+    $('quizList').innerHTML = groups.map(({ heading, items }) => `<section class="quiz-day">
+        <h3>${esc(heading.relative || heading.label)}${heading.relative ? ` <span>${esc(heading.label)}</span>` : ''}</h3>
+        ${items.map(quizHtml).join('')}
+      </section>`).join('');
   }
 
-  // Today screen: the student's quizzes in the next seven days.
+  // Today screen: the student's quizzes in the next seven days, and this week's quizzes all week.
   function renderQuizSoon() {
     const t = T(), el = $('quizSoon');
     const soon = visibleQuizzes('mine').filter(q => daysAway(q.date) <= 7);
     el.hidden = !soon.length || !state.classes.length;
     if (el.hidden) return;
-    const when = q => quizDay(q.date).relative || new Intl.DateTimeFormat(t.locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(dateOf(q.date));
+    const when = q => {
+      if (isWeekQuiz(q)) { const week = quizWeek(q.date); return week.relative || week.label; }
+      return quizDay(q.date).relative || new Intl.DateTimeFormat(t.locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(dateOf(q.date));
+    };
     el.innerHTML = `<span class="lbl">${t.upcomingQuizzes}</span>
       ${soon.slice(0, 3).map(q => `<span class="row"><b>${esc(q.course)}</b> ${esc(q.title || t.quiz)} · ${esc(when(q))}${q.time ? ' ' + esc(q.time) : ''}</span>`).join('')}
       <span class="more">${t.seeAll} →</span>`;
