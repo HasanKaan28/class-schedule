@@ -587,7 +587,7 @@
   // The official IUS midterm schedule (data/midterms.js). No classes are held on the midterm days.
 
   const MIDTERMS = window.MIDTERMS || null;
-  const EXAMS = MIDTERMS ? MIDTERMS.exams.map(([course, date, s, e, n]) => ({ course, date, s, e, n })) : [];
+  const EXAMS = MIDTERMS ? MIDTERMS.exams.map(([course, date, s, e, n, note]) => ({ course, date, s, e, n, note })) : [];
   const EXAM_TAB_DAYS = 3; // the Midterms tab stays this many days after the last midterm
   const EXAM_SOON_DAYS = 14; // the Today card appears this many days before the first midterm
 
@@ -636,7 +636,7 @@
     return `<div class="quiz exam ${examColor(x.course)}${done ? ' done' : ''}">
       <span class="when">${esc(x.s)}<span>${esc(x.e)}</span></span>
       <span class="what">
-        <span class="top"><span class="code">${esc(x.course)}</span>${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
+        <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
         ${name ? `<span class="meta">${esc(name)}</span>` : ''}
       </span>
     </div>`;

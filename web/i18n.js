@@ -134,10 +134,11 @@ window.I18N = {
     inDays: n => `in ${n} days`,
     examNow: 'Now',
     examDone: 'Done',
+    examOral: 'Oral',
     seeAllExams: 'See all midterms',
     examSearch: 'Find a course',
     noExamMatch: 'No midterm matches this search.',
-    examSource: 'Dates and times come from the official IUS midterm schedule. Rooms are not in it yet. Times can change, so check with your instructor.',
+    examSource: 'Dates and times come from the official IUS undergraduate midterm schedule. IUS will announce the rooms soon. Times can change, so check with your instructor.',
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   },
@@ -275,10 +276,11 @@ window.I18N = {
     inDays: n => `${n} gün sonra`,
     examNow: 'Şimdi',
     examDone: 'Bitti',
+    examOral: 'Sözlü',
     seeAllExams: 'Tüm vizeler',
     examSearch: 'Ders ara',
     noExamMatch: 'Bu aramaya uyan vize yok.',
-    examSource: "Tarih ve saatler IUS'in resmi vize programından alındı. Salonlar henüz programda yok. Saatler değişebilir, hocana da sor.",
+    examSource: "Tarih ve saatler IUS'in resmi vize programından alındı. Salonları IUS yakında duyuracak. Saatler değişebilir, hocana da sor.",
     days: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
     daysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
   },
@@ -416,10 +418,11 @@ window.I18N = {
     inDays: n => `za ${n} dana`,
     examNow: 'Sada',
     examDone: 'Završen',
+    examOral: 'Usmeni',
     seeAllExams: 'Svi ispiti',
     examSearch: 'Pronađi predmet',
     noExamMatch: 'Nijedan ispit ne odgovara pretrazi.',
-    examSource: 'Datumi i vremena su iz službenog IUS rasporeda midterm ispita. Sale još nisu navedene. Vremena se mogu promijeniti, provjeri s profesorom.',
+    examSource: 'Datumi i vremena su iz službenog IUS rasporeda midterm ispita. IUS će uskoro objaviti sale. Vremena se mogu promijeniti, provjeri s profesorom.',
     days: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'],
     daysShort: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub']
   }
