@@ -973,10 +973,13 @@
     };
     Object.keys(entry).forEach(k => { if (entry[k] === '') delete entry[k]; });
     const index = state.classes.findIndex(c => c.id === entry.id);
+    const first = index < 0 && !state.classes.length;
     if (index >= 0) state.classes[index] = entry; else state.classes.push(entry);
     saveClasses();
     closeDialog($('editor'));
     renderAll();
+    // The empty Today card held the only Add button; after the first class, open Courses, where the next one is added.
+    if (first) setTab('courses');
   }
 
   function deleteFromEditor() {
