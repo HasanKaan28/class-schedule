@@ -47,6 +47,7 @@
       <button type="button" class="btn primary" data-add data-i18n="addClass"></button>
     </section>
     <section class="status" id="status" aria-live="polite" hidden></section>
+    <button type="button" class="quiz-soon" id="examToday" data-goto="exams" hidden></button>
     <button type="button" class="quiz-soon" id="quizSoon" data-goto="quizzes" hidden></button>
     <div class="chips" id="chips"></div>
     <h2 class="day-title" id="dayTitle"></h2>
@@ -55,9 +56,14 @@
   </section>
 
   <section class="view" id="view-week" role="tabpanel" aria-labelledby="tab-week" hidden>
+    <div class="seg" role="group" id="weekMode" hidden>
+      <button type="button" data-week-mode="classes" data-i18n="classesMode"></button>
+      <button type="button" data-week-mode="exams" data-i18n="examsMode"></button>
+    </div>
     <p class="summary" id="summary"></p>
     <div class="week" id="week"></div>
-    <p class="hint" data-i18n="tapHint"></p>
+    <div id="examWeek" hidden></div>
+    <p class="hint" id="weekHint" data-i18n="tapHint"></p>
   </section>
 
   <section class="view" id="view-quizzes" role="tabpanel" aria-labelledby="tab-quizzes" hidden>
@@ -74,6 +80,23 @@
     <p class="source" data-i18n="quizSource"></p>
   </section>
 
+  <section class="view" id="view-exams" role="tabpanel" aria-labelledby="tab-exams" hidden>
+    <div class="quiz-head">
+      <h2 data-i18n="midterms"></h2>
+      <p class="hint" id="examRange"></p>
+      <div class="seg" role="group" id="examScope">
+        <button type="button" data-exam-scope="mine" data-i18n="myCourses"></button>
+        <button type="button" data-exam-scope="all" data-i18n="allCourses"></button>
+      </div>
+    </div>
+    <label class="field" id="examSearchWrap" hidden>
+      <span data-i18n="examSearch"></span>
+      <input type="search" id="examSearch" lang="en" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CS103">
+    </label>
+    <div class="quiz-list" id="examList"></div>
+    <p class="source" data-i18n="examSource"></p>
+  </section>
+
   <section class="view" id="view-courses" role="tabpanel" aria-labelledby="tab-courses" hidden>
     <button type="button" class="btn primary wide" data-add data-i18n="addClass"></button>
     <ul class="courses" id="courseList"></ul>
@@ -85,6 +108,7 @@
   <button type="button" role="tab" id="tab-today" data-tab="today" data-i18n="today"></button>
   <button type="button" role="tab" id="tab-week" data-tab="week" data-i18n="week"></button>
   <button type="button" role="tab" id="tab-quizzes" data-tab="quizzes" data-i18n="quizzes"></button>
+  <button type="button" role="tab" id="tab-exams" data-tab="exams" data-i18n="midtermsTab" hidden></button>
   <button type="button" role="tab" id="tab-courses" data-tab="courses" data-i18n="courses"></button>
 </nav>
 
@@ -233,6 +257,7 @@
 </dialog>
 
 <script src="data/courses.js"></script>
+<script src="data/midterms.js"></script>
 <script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>

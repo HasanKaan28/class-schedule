@@ -28,6 +28,7 @@ You only need to do this once.
 - **Today** shows the class happening now or the next one, and the chosen day's classes with the free gaps between them.
 - **Week** shows Monday to Friday (and Saturday if you have classes then).
 - **Quizzes** lists upcoming quizzes for your courses and sections (or for all courses). Tap **Report a quiz** to tell the club about one; it appears for everyone once the club has checked it. Your next quizzes also show on Today.
+- **Midterms** (shown until a few days after the last midterm) lists the date and time of each of your midterms from the official IUS midterm schedule, as a list and as a midterm-week grid, or all courses' midterms with a search. During midterm week there are no classes, so Today shows your midterms instead and Week opens on the midterm week.
 - **Courses** lists each course with its instructors and office hours. Edit or delete classes here.
 
 Your timetable is stored only on your phone (or in your browser). It is never uploaded.
