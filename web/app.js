@@ -636,7 +636,7 @@
     return `<div class="quiz exam ${examColor(x.course)}${done ? ' done' : ''}">
       <span class="when">${esc(x.s)}<span>${esc(x.e)}</span></span>
       <span class="what">
-        <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
+        <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : x.note === 'local' ? `<span class="tag">${esc(T().examLocal)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
         ${name ? `<span class="meta">${esc(name)}</span>` : ''}
       </span>
     </div>`;
