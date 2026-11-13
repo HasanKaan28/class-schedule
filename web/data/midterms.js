@@ -5,6 +5,10 @@ window.MIDTERMS = {
   term: 'Fall 2026',
   from: '2026-11-14',
   to: '2026-11-22',
+  // Rooms an instructor assigned by lecture day (1 = Monday). MATH101: announced on Teams by the instructor.
+  roomByLectureDay: {
+    MATH101: { 1: 'B F2.4, B F2.5, B F2.6, B F1.8, B F1.9, B F2.17', 2: 'B F2.4, B F2.5, B F2.6, B F1.8, B F1.9, B F2.17', 3: 'Sports Hall' }
+  },
   exams: [
     ["CS420", "2026-11-14", "10:45", "12:15", "Network Programming", "", "B F2.16, B F2.17"],
     ["TURK111", "2026-11-14", "10:45", "12:15", "Spoken Turkish I", "", "Sports Hall (150), B F2.4, B F2.5, B F2.6, B F1.8, B F1.9"],

@@ -646,18 +646,27 @@
   }
 
   function examHtml(x, countdown) {
-    const name = examName(x), done = examDone(x);
+    const name = examName(x), done = examDone(x), mine = myExamRoom(x);
     return `<div class="quiz exam ${examColor(x.course)}${done ? ' done' : ''}">
       <span class="when">${esc(x.s)}<span>${esc(x.e)}</span></span>
       <span class="what">
         <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : x.note === 'local' ? `<span class="tag">${esc(T().examLocal)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
         ${name ? `<span class="meta">${esc(name)}</span>` : ''}
-        ${x.room ? `<span class="meta">${esc(examRoomLabel(x))}: ${esc(x.room)}</span>` : ''}
+        ${mine ? `<span class="meta"><b>${esc(T().examYourRoom)}: ${esc(mine.room)}</b> · ${esc(T().examRoomRule(dayLong(mine.day)))}</span>`
+          : x.room ? `<span class="meta">${esc(examRoomLabel(x))}: ${esc(x.room)}</span>` : ''}
       </span>
     </div>`;
   }
 
   const examRoomLabel = x => x.room.includes(',') ? T().examRooms : T().examRoom;
+
+  // The student's own room when the instructor split the course by lecture day.
+  function myExamRoom(x) {
+    const rule = MIDTERMS && MIDTERMS.roomByLectureDay && MIDTERMS.roomByLectureDay[x.course];
+    if (!rule) return null;
+    const lec = state.classes.find(c => baseCode(c.code) === x.course && c.t === 'lec' && rule[c.d]);
+    return lec ? { room: rule[lec.d], day: lec.d } : null;
+  }
 
   // One heading per midterm day.
   function examDaysHtml(list, countdown) {
@@ -753,6 +762,8 @@
   }
 
   // Today screen: from two weeks before, the first midterm; during midterm week, today's midterms instead of classes.
+  const examRoomShort = x => { const room = (myExamRoom(x) || x).room; return room ? ' · ' + esc(room) : ''; };
+
   function renderExamToday() {
     const t = T(), el = $('examToday'), period = examPeriod();
     const soon = !!MIDTERMS && !period && daysAway(MIDTERMS.from) > 0 && daysAway(MIDTERMS.from) <= EXAM_SOON_DAYS;
@@ -761,12 +772,12 @@
     const { list } = myExams(), today = isoDate(nowDate()), rows = [];
     if (period) {
       const todays = list.filter(x => x.date === today);
-      todays.forEach(x => rows.push(`<b>${esc(x.course)}</b> ${esc(x.s)}–${esc(x.e)}${x.room ? ' · ' + esc(x.room) : ''} · ${esc(examWhen(x))}`));
+      todays.forEach(x => rows.push(`<b>${esc(x.course)}</b> ${esc(x.s)}–${esc(x.e)}${examRoomShort(x)} · ${esc(examWhen(x))}`));
       if (!todays.length) rows.push(esc(t.noExamToday));
     }
     const next = list.find(x => x.date > today || (!period && x.date === today && !examDone(x)));
     if (next) {
-      rows.push(`${esc(t.nextExam)}: <b>${esc(next.course)}</b> ${esc(examDate(next.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(next.s)}${next.room ? ' · ' + esc(next.room) : ''} · ${esc(examWhen(next))}`);
+      rows.push(`${esc(t.nextExam)}: <b>${esc(next.course)}</b> ${esc(examDate(next.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(next.s)}${examRoomShort(next)} · ${esc(examWhen(next))}`);
     } else if (!list.length) {
       rows.push(esc(t.noExamsMine));
     }

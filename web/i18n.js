@@ -143,6 +143,8 @@ window.I18N = {
     noExamMatch: 'No midterm matches this search.',
     examRoom: 'Room',
     examRooms: 'Rooms',
+    examYourRoom: 'Your room',
+    examRoomRule: day => `${day} lecture group, as the instructor announced`,
     examSource: 'Dates, times and rooms come from the official IUS undergraduate midterm schedule. A range after a room, such as Sports Hall (1–109), shows which students on the class list sit there; a single number is how many students the room takes. Times and rooms can change, so check with your instructor.',
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -290,6 +292,8 @@ window.I18N = {
     noExamMatch: 'Bu aramaya uyan vize yok.',
     examRoom: 'Salon',
     examRooms: 'Salonlar',
+    examYourRoom: 'Senin salonun',
+    examRoomRule: day => `${day} dersi grubu, hocanın duyurusuna göre`,
     examSource: "Tarih, saat ve salonlar IUS'in resmi vize programından alındı. Salondan sonraki aralık, örneğin Sports Hall (1–109), sınıf listesinde hangi öğrencilerin orada oturacağını gösterir; tek sayı salonun kaç öğrenci aldığıdır. Saat ve salonlar değişebilir, hocana da sor.",
     days: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
     daysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
@@ -437,6 +441,8 @@ window.I18N = {
     noExamMatch: 'Nijedan ispit ne odgovara pretrazi.',
     examRoom: 'Sala',
     examRooms: 'Sale',
+    examYourRoom: 'Tvoja sala',
+    examRoomRule: day => `grupa s predavanja (${day}), prema obavještenju profesora`,
     examSource: 'Datumi, vremena i sale su iz službenog IUS rasporeda midterm ispita. Raspon iza sale, npr. Sports Hall (1–109), pokazuje koji studenti sa spiska sjede tamo; jedan broj je koliko studenata sala prima. Vremena i sale se mogu promijeniti, provjeri s profesorom.',
     days: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'],
     daysShort: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub']
