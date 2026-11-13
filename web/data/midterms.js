@@ -9,6 +9,8 @@ window.MIDTERMS = {
   roomByLectureDay: {
     MATH101: { 1: 'B F2.4, B F2.5, B F2.6, B F1.8, B F1.9, B F2.17', 2: 'B F2.4, B F2.5, B F2.6, B F1.8, B F1.9, B F2.17', 3: 'Sports Hall' }
   },
+  // Courses whose instructor sent a seating list by student name (not published here).
+  seatingByName: ['CS103'],
   exams: [
     ["CS420", "2026-11-14", "10:45", "12:15", "Network Programming", "", "B F2.16, B F2.17"],
     ["TURK111", "2026-11-14", "10:45", "12:15", "Spoken Turkish I", "", "Sports Hall (150), B F2.4, B F2.5, B F2.6, B F1.8, B F1.9"],

@@ -654,6 +654,7 @@
         ${name ? `<span class="meta">${esc(name)}</span>` : ''}
         ${mine ? `<span class="meta"><b>${esc(T().examYourRoom)}: ${esc(mine.room)}</b> · ${esc(T().examRoomRule(dayLong(mine.day)))}</span>`
           : x.room ? `<span class="meta">${esc(examRoomLabel(x))}: ${esc(x.room)}</span>` : ''}
+        ${MIDTERMS.seatingByName && MIDTERMS.seatingByName.includes(x.course) ? `<span class="meta"><b>${esc(T().examSeatingByName)}</b></span>` : ''}
       </span>
     </div>`;
   }
