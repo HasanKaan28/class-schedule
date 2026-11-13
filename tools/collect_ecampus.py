@@ -4,7 +4,8 @@ Usage:
   python tools/collect_ecampus.py [--term data/term-schedule.json] [--out web/data/courses.js] [--budget 270] [--offline]
 
 Lecture times and rooms come from the official term schedule (data/term-schedule.json, made by
-tools/import_term_schedule.py). Only those courses are looked up on eCampus, which adds the syllabus link,
+tools/import_term_schedule.py). Courses that only appear in the midterm schedule (web/data/midterms.js), such
+as courses with no weekly classes in the term schedule, are added too. Only those courses are looked up on eCampus, which adds the syllabus link,
 ECTS, lecturers, assistants, tutorial and lab sections, and office hours. Only public pages are read, with
 the 10-second delay eCampus asks for in robots.txt. Each run reads syllabi until its time budget is used up,
 never-read and oldest first, and keeps the earlier details of the rest. Standard library only.
@@ -303,6 +304,14 @@ def merge_sections(term_course, syllabus_sections):
     return syllabus_sections
 
 
+def read_midterm_courses(path):
+    """Course code -> name from web/data/midterms.js, for courses missing from the term schedule."""
+    if not path or not path.exists():
+        return {}
+    rows = re.findall(r'\[\s*"([A-Z]+\d+[A-Z]?)",\s*"\d{4}-\d\d-\d\d",\s*"[^"]*",\s*"[^"]*",\s*"([^"]*)"', path.read_text(encoding="utf-8"))
+    return {code: name for code, name in rows}
+
+
 def collect(args, previous, term):
     deadline = time.monotonic() + args.budget * 60
     fetcher = Fetcher(args.delay)
@@ -310,6 +319,7 @@ def collect(args, previous, term):
     fetched = dict(previous.get("fetched", {}))
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     term_courses = term["courses"] if term else {}
+    exam_courses = read_midterm_courses(args.midterms) if term else {}
 
     rows_by_code = {}
     staff = previous.get("staff", {})
@@ -340,6 +350,8 @@ def collect(args, previous, term):
 
     # With a term schedule only this term's courses are kept; otherwise everything eCampus lists.
     codes = list(term_courses) or list(rows_by_code) or list(old_courses)
+    if term_courses:
+        codes += [c for c in exam_courses if c not in term_courses]
 
     def listed(code):
         course, row = {}, rows_by_code.get(code)
@@ -349,6 +361,8 @@ def collect(args, previous, term):
                 course["ects"] = int(row["ects"])
         if code in term_courses:
             course["n"] = term_courses[code]["n"]
+        elif not course.get("n") and exam_courses.get(code):
+            course["n"] = exam_courses[code]
         return course
 
     # Every course keeps its last eCampus details until its syllabus is read again.
@@ -416,6 +430,7 @@ if __name__ == "__main__":
     parser.add_argument("--limit", type=int, help="only read this many syllabi and skip office hours (for testing)")
     parser.add_argument("--force", action="store_true", help="continue even if eCampus lists far fewer courses than before")
     parser.add_argument("--term", type=Path, default=Path("data/term-schedule.json"), help="term schedule from tools/import_term_schedule.py")
+    parser.add_argument("--midterms", type=Path, default=Path("web/data/midterms.js"), help="midterm schedule; its courses missing from the term schedule are added")
     parser.add_argument("--offline", action="store_true", help="read nothing from eCampus; rebuild from the term schedule and the saved data")
     args = parser.parse_args()
     previous = {} if args.pages else read_previous(args.out)

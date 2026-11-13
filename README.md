@@ -35,7 +35,7 @@ Your timetable is stored only on your phone (or in your browser). It is never up
 
 ## Where the data comes from
 
-- **Courses, lecture times and rooms**: the official IUS undergraduate schedule for the term (currently [Fall 2026, updated 28 September](https://www.ius.edu.ba/sites/default/files/docs/undergraduate_fall26_v02_sep_28_0745.pdf)). [`tools/import_term_schedule.py`](tools/import_term_schedule.py) turns the PDF into [`data/term-schedule.json`](data/term-schedule.json).
+- **Courses, lecture times and rooms**: the official IUS undergraduate schedule for the term (currently [Fall 2026, updated 28 September](https://www.ius.edu.ba/sites/default/files/docs/undergraduate_fall26_v02_sep_28_0745.pdf)). [`tools/import_term_schedule.py`](tools/import_term_schedule.py) turns the PDF into [`data/term-schedule.json`](data/term-schedule.json). Courses that appear only in the midterm schedule ([`web/data/midterms.js`](web/data/midterms.js)), such as IATA101 and ITRD101, are added to the course list too, so students can pick them.
 - **Syllabus link, ECTS, lecturers, assistants, tutorial and lab sections, office hours**: IUS eCampus. [`tools/collect_ecampus.py`](tools/collect_ecampus.py) looks up only this term's courses, waiting 10 seconds between requests as eCampus's `robots.txt` asks, and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every night and commits any changes, which redeploys the site.
 
 eCampus is sometimes out of date (a tutorial time can change before the syllabus does). Times you enter yourself always win.
