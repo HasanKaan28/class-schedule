@@ -141,7 +141,9 @@ window.I18N = {
     seeAllExams: 'See all midterms',
     examSearch: 'Find a course',
     noExamMatch: 'No midterm matches this search.',
-    examSource: 'Dates and times come from the official IUS undergraduate midterm schedule. IUS will announce the rooms soon. Times can change, so check with your instructor.',
+    examRoom: 'Room',
+    examRooms: 'Rooms',
+    examSource: 'Dates, times and rooms come from the official IUS undergraduate midterm schedule. A range after a room, such as Sports Hall (1–109), shows which students on the class list sit there; a single number is how many students the room takes. Times and rooms can change, so check with your instructor.',
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   },
@@ -286,7 +288,9 @@ window.I18N = {
     seeAllExams: 'Tüm vizeler',
     examSearch: 'Ders ara',
     noExamMatch: 'Bu aramaya uyan vize yok.',
-    examSource: "Tarih ve saatler IUS'in resmi vize programından alındı. Salonları IUS yakında duyuracak. Saatler değişebilir, hocana da sor.",
+    examRoom: 'Salon',
+    examRooms: 'Salonlar',
+    examSource: "Tarih, saat ve salonlar IUS'in resmi vize programından alındı. Salondan sonraki aralık, örneğin Sports Hall (1–109), sınıf listesinde hangi öğrencilerin orada oturacağını gösterir; tek sayı salonun kaç öğrenci aldığıdır. Saat ve salonlar değişebilir, hocana da sor.",
     days: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
     daysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
   },
@@ -431,7 +435,9 @@ window.I18N = {
     seeAllExams: 'Svi ispiti',
     examSearch: 'Pronađi predmet',
     noExamMatch: 'Nijedan ispit ne odgovara pretrazi.',
-    examSource: 'Datumi i vremena su iz službenog IUS rasporeda midterm ispita. IUS će uskoro objaviti sale. Vremena se mogu promijeniti, provjeri s profesorom.',
+    examRoom: 'Sala',
+    examRooms: 'Sale',
+    examSource: 'Datumi, vremena i sale su iz službenog IUS rasporeda midterm ispita. Raspon iza sale, npr. Sports Hall (1–109), pokazuje koji studenti sa spiska sjede tamo; jedan broj je koliko studenata sala prima. Vremena i sale se mogu promijeniti, provjeri s profesorom.',
     days: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'],
     daysShort: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub']
   }

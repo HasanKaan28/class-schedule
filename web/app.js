@@ -601,7 +601,7 @@
   // The official IUS midterm schedule (data/midterms.js). No classes are held on the midterm days.
 
   const MIDTERMS = window.MIDTERMS || null;
-  const EXAMS = MIDTERMS ? MIDTERMS.exams.map(([course, date, s, e, n, note]) => ({ course, date, s, e, n, note })) : [];
+  const EXAMS = MIDTERMS ? MIDTERMS.exams.map(([course, date, s, e, n, note, room]) => ({ course, date, s, e, n, note, room })) : [];
   const EXAM_TAB_DAYS = 3; // the Midterms tab stays this many days after the last midterm
   const EXAM_SOON_DAYS = 14; // the Today card appears this many days before the first midterm
 
@@ -652,9 +652,12 @@
       <span class="what">
         <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : x.note === 'local' ? `<span class="tag">${esc(T().examLocal)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
         ${name ? `<span class="meta">${esc(name)}</span>` : ''}
+        ${x.room ? `<span class="meta">${esc(examRoomLabel(x))}: ${esc(x.room)}</span>` : ''}
       </span>
     </div>`;
   }
+
+  const examRoomLabel = x => x.room.includes(',') ? T().examRooms : T().examRoom;
 
   // One heading per midterm day.
   function examDaysHtml(list, countdown) {
@@ -758,12 +761,12 @@
     const { list } = myExams(), today = isoDate(nowDate()), rows = [];
     if (period) {
       const todays = list.filter(x => x.date === today);
-      todays.forEach(x => rows.push(`<b>${esc(x.course)}</b> ${esc(x.s)}–${esc(x.e)} · ${esc(examWhen(x))}`));
+      todays.forEach(x => rows.push(`<b>${esc(x.course)}</b> ${esc(x.s)}–${esc(x.e)}${x.room ? ' · ' + esc(x.room) : ''} · ${esc(examWhen(x))}`));
       if (!todays.length) rows.push(esc(t.noExamToday));
     }
     const next = list.find(x => x.date > today || (!period && x.date === today && !examDone(x)));
     if (next) {
-      rows.push(`${esc(t.nextExam)}: <b>${esc(next.course)}</b> ${esc(examDate(next.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(next.s)} · ${esc(examWhen(next))}`);
+      rows.push(`${esc(t.nextExam)}: <b>${esc(next.course)}</b> ${esc(examDate(next.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(next.s)}${next.room ? ' · ' + esc(next.room) : ''} · ${esc(examWhen(next))}`);
     } else if (!list.length) {
       rows.push(esc(t.noExamsMine));
     }
