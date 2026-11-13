@@ -80,7 +80,10 @@
   const dayLong = d => T().days[d % 7];
   const info = code => CATALOG.courses[code] || null;
   const nameOf = c => (info(c.code) || {}).n || c.name || '';
-  const sorted = list => [...list].sort((a, b) => a.d - b.d || toMin(a.s) - toMin(b.s));
+  // Double diploma courses run with the partner university and have no weekly class hours here.
+  const NO_CLASS_TIMES = new Set(['IATA101', 'ITRD101']);
+  const timed = () => state.classes.filter(c => c.d);
+  const sorted = list => [...list].sort((a, b) => (a.d || 8) - (b.d || 8) || (toMin(a.s) || 0) - (toMin(b.s) || 0));
   const byDay = d => sorted(state.classes.filter(c => c.d === d));
   const classLabel = c => `${c.code}${c.sec ? '.' + c.sec : ''}`;
   const typeTag = c => c.t === 'lec' ? '' : `<span class="tag">${esc(T().types[c.t] || c.t)}</span>`;
@@ -105,7 +108,7 @@
 
   // Monday to Friday, plus the weekend days that have classes.
   function shownDays() {
-    const used = new Set(state.classes.map(c => c.d));
+    const used = new Set(timed().map(c => c.d));
     return [1, 2, 3, 4, 5].concat([6, 7].filter(d => used.has(d)));
   }
   const defaultDay = day => shownDays().includes(day) ? day : 1;
@@ -224,11 +227,11 @@
     const t = T(), { day, min } = clock(), days = shownDays();
     const codes = [...new Set(state.classes.map(c => c.code))];
     const ects = codes.reduce((sum, code) => sum + ((info(code) || {}).ects || 0), 0);
-    const total = state.classes.reduce((sum, c) => sum + dur(c), 0);
+    const total = timed().reduce((sum, c) => sum + dur(c), 0);
     $('summary').textContent = state.classes.length ? t.summary(codes.length, ects, fmtDur(total)) : '';
 
-    const start = Math.min(9 * 60, ...state.classes.map(c => Math.floor(toMin(c.s) / 60) * 60));
-    const end = Math.max(17 * 60, ...state.classes.map(c => Math.ceil(toMin(c.e) / 60) * 60));
+    const start = Math.min(9 * 60, ...timed().map(c => Math.floor(toMin(c.s) / 60) * 60));
+    const end = Math.max(17 * 60, ...timed().map(c => Math.ceil(toMin(c.e) / 60) * 60));
     const rows = (end - start) / 10;
     const week = $('week');
     week.style.gridTemplateColumns = `26px repeat(${days.length}, minmax(0, 1fr))`;
@@ -304,7 +307,7 @@
     const name = i ? i.n : (entries.find(c => c.name) || {}).name || '';
     const url = ecampusUrl(code);
     const rows = entries.map(c => `<li class="entry">
-        <span>${esc(t.types[c.t] || c.t)} · ${dayShort(c.d)} ${c.s}–${c.e}${c.room ? ' · ' + esc(c.room) : ''}${c.sec ? ` · ${t.section} ${esc(c.sec)}` : ''}</span>
+        <span>${!c.d ? esc(t.noTimesShort) : `${esc(t.types[c.t] || c.t)} · ${dayShort(c.d)} ${c.s}–${c.e}${c.room ? ' · ' + esc(c.room) : ''}${c.sec ? ` · ${t.section} ${esc(c.sec)}` : ''}`}</span>
         <button type="button" class="link-btn" data-edit="${esc(c.id)}">${t.edit}</button>
       </li>`).join('');
     const people = peopleFor(code, entries);
@@ -899,6 +902,10 @@
     const unknown = !i && code.length >= 4 && !hits.some(([c]) => c.startsWith(query)) && Object.keys(CATALOG.courses).length > 0;
     $('fCourseName').textContent = i ? `${i.n}${i.ects ? ` · ${i.ects} ${t.ects}` : ''}` : (unknown ? t.unknownCourse : '');
     $('fCourseName').classList.toggle('muted', !i);
+    const noTimes = NO_CLASS_TIMES.has(code);
+    $('timeFields').hidden = noTimes;
+    $('fNoTimes').hidden = !noTimes;
+    $('fWarn').hidden = $('fWarn').hidden || noTimes;
     $('fNameWrap').hidden = !unknown;
     const sections = i && i.sec ? i.sec : [];
     $('sectionPicker').hidden = !sections.length;
@@ -955,7 +962,8 @@
 
   function saveEditor() {
     const t = T(), { code, sec } = readCode(), s = $('fStart').value, e = $('fEnd').value;
-    const error = !code ? t.errCode : !state.form.d ? t.errDay : (!s || !e || toMin(e) <= toMin(s)) ? t.errTime : '';
+    const noTimes = NO_CLASS_TIMES.has(code);
+    const error = !code ? t.errCode : noTimes ? '' : !state.form.d ? t.errDay : (!s || !e || toMin(e) <= toMin(s)) ? t.errTime : '';
     $('fError').textContent = error;
     $('fError').hidden = !error;
     if (error) return;
@@ -971,7 +979,8 @@
       who: $('fWho').value.trim(),
       name: info(code) ? '' : $('fName').value.trim()
     };
-    Object.keys(entry).forEach(k => { if (entry[k] === '') delete entry[k]; });
+    if (noTimes) ['t', 'd', 's', 'e', 'room', 'sec'].forEach(k => delete entry[k]);
+    Object.keys(entry).forEach(k => { if (entry[k] === '' || entry[k] == null) delete entry[k]; });
     const index = state.classes.findIndex(c => c.id === entry.id);
     const first = index < 0 && !state.classes.length;
     if (index >= 0) state.classes[index] = entry; else state.classes.push(entry);
@@ -1001,7 +1010,7 @@
   function reminderList() {
     const t = T(), s = state.settings, list = [];
     if (s.before) {
-      state.classes.forEach(c => {
+      timed().forEach(c => {
         let day = c.d, min = toMin(c.s) - s.lead;
         if (min < 0) { min += 1440; day = day === 1 ? 7 : day - 1; }
         list.push({

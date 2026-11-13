@@ -23,7 +23,7 @@ You only need to do this once.
 1. Tap **+ Add class** and type a course code, for example `CS103`. Pick the course from the list.
 2. This term's sections appear: lectures from the official schedule, tutorials and labs from eCampus. Tap yours to fill in the type, day, time and room, or enter them yourself.
 3. Optionally add your instructor's name; the app then shows their office and office hours too.
-4. Repeat for each lecture, tutorial and lab.
+4. Repeat for each lecture, tutorial and lab. Double diploma courses (IATA101, ITRD101) have no weekly class hours, so the app asks only for the code; their midterms and quizzes still show.
 
 - **Today** shows the class happening now or the next one, and the chosen day's classes with the free gaps between them.
 - **Week** shows Monday to Friday (and Saturday if you have classes then).
