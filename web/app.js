@@ -133,11 +133,21 @@
 
   // --- Today ----------------------------------------------------------------------------------
 
+  // True when the day k days from today falls in midterm week.
+  function noClassesOn(k) {
+    if (!MIDTERMS) return false;
+    const date = isoDate(addDays(nowDate(), k));
+    return date >= MIDTERMS.from && date <= MIDTERMS.to;
+  }
+
   function findNow() {
     const { day, min } = clock();
+    if (noClassesOn(0)) return null;
     const current = state.classes.find(c => c.d === day && toMin(c.s) <= min && min < toMin(c.e));
     if (current) return { kind: 'now', c: current, left: toMin(current.e) - min, progress: (min - toMin(current.s)) / dur(current) };
-    for (let k = 0; k < 8; k++) {
+    // Look up to five weeks ahead, skipping midterm week, when no classes are held.
+    for (let k = 0; k < 36; k++) {
+      if (noClassesOn(k)) continue;
       const d = ((day - 1 + k) % 7) + 1;
       const c = byDay(d).find(x => k > 0 || toMin(x.s) > min);
       if (c) return { kind: 'next', c, k, until: k * 1440 + toMin(c.s) - min };
@@ -155,7 +165,8 @@
       sub = `${c.s}–${c.e}${c.room ? ' · ' + esc(c.room) : ''} · ${t.left(fmtDur(found.left))}`;
       extra = `<span class="bar"><i style="width:${Math.round(found.progress * 100)}%"></i></span>`;
     } else {
-      const when = found.k === 0 ? t.todayWord : found.k === 1 ? t.tomorrow : dayLong(c.d);
+      const when = found.k === 0 ? t.todayWord : found.k === 1 ? t.tomorrow : found.k < 7 ? dayLong(c.d)
+        : examDate(isoDate(addDays(nowDate(), found.k)), { weekday: 'long', day: 'numeric', month: 'long' });
       sub = `${when} ${c.s}${c.room ? ' · ' + esc(c.room) : ''}${found.until < 1440 ? ' · ' + t.inTime(fmtDur(found.until)) : ''}`;
     }
     el.className = `status ${colorClass(c.code)}`;
@@ -1010,6 +1021,8 @@
   // Weekly notifications for the Android app: {day: 1-7, min: minutes after midnight, title, body}.
   function reminderList() {
     const t = T(), s = state.settings, list = [];
+    // Android repeats reminders every week. Opened during midterm week, the app turns them off; the first open after it turns them back on.
+    if (examPeriod()) return list;
     if (s.before) {
       timed().forEach(c => {
         let day = c.d, min = toMin(c.s) - s.lead;
@@ -1190,7 +1203,7 @@
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
   darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); renderExams(); loadQuizzes(false); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); renderExams(); loadQuizzes(false); syncReminders(); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); renderExams(); }, 30000);
 
   // Called by the Android app: the back button, and the notification permission after a prompt or a settings visit.
