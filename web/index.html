@@ -22,7 +22,7 @@
 <body>
 <header class="app-head">
   <div class="brand">
-    <a class="club" href="https://iusengclub.vercel.app" target="_blank" rel="noopener">
+    <a class="club" href="https://iuseng.club" target="_blank" rel="noopener">
       <img src="brand/iec-logo.png" width="32" height="32" alt="IUS Engineering Club">
     </a>
     <div class="titles">
@@ -30,6 +30,11 @@
       <p class="term" data-i18n="appSub"></p>
     </div>
   </div>
+  <div class="head-actions">
+  <a class="site-link" id="siteLink" href="https://iuseng.club" target="_blank" rel="noopener">
+    <span>iuseng.club</span>
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 16 16 8M9.5 8H16v6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
   <button type="button" class="icon-btn" id="openSettings" data-open-settings>
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
       <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="3.1 3.5"/>
@@ -37,6 +42,7 @@
       <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/>
     </svg>
   </button>
+  </div>
 </header>
 
 <main id="main">
@@ -198,6 +204,8 @@
         <button type="button" class="link-btn" id="openNotifySettings" data-i18n="openSettings"></button>
       </div>
     </section>
+
+    <p class="made-by"><span data-i18n="madeBy"></span> <a href="https://iuseng.club" target="_blank" rel="noopener">iuseng.club</a></p>
 
     <button type="button" class="btn ghost wide" id="settingsClose" data-i18n="close"></button>
   </div>

@@ -1133,6 +1133,7 @@
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
     $('langGroup').setAttribute('aria-label', T().language);
     $('openSettings').setAttribute('aria-label', T().settings);
+    if ($('siteLink')) $('siteLink').setAttribute('aria-label', T().siteLink); // absent in an older cached page
     if ($('editor').open) { renderSegments(); onCodeInput(false); }
     renderSettings();
     renderAll();
