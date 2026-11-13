@@ -903,8 +903,9 @@
     $('fCourseName').textContent = i ? `${i.n}${i.ects ? ` · ${i.ects} ${t.ects}` : ''}` : (unknown ? t.unknownCourse : '');
     $('fCourseName').classList.toggle('muted', !i);
     const noTimes = NO_CLASS_TIMES.has(code);
-    $('timeFields').hidden = noTimes;
-    $('fNoTimes').hidden = !noTimes;
+    // Optional: an older cached index.html has neither element, and the editor must still open.
+    if ($('timeFields')) $('timeFields').hidden = noTimes;
+    if ($('fNoTimes')) $('fNoTimes').hidden = !noTimes;
     $('fWarn').hidden = $('fWarn').hidden || noTimes;
     $('fNameWrap').hidden = !unknown;
     const sections = i && i.sec ? i.sec : [];
