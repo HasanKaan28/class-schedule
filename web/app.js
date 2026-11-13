@@ -20,10 +20,11 @@
     }
   };
 
-  const DEFAULT_SETTINGS = { theme: 'system', before: false, lead: 15, evening: false, eveningTime: '20:00' };
+  const DEFAULT_SETTINGS = { theme: 'system', effects: true, before: false, lead: 15, evening: false, eveningTime: '20:00' };
   // Settings shows the themes in these groups. Light and dark are in styles.css, the rest in themes/*.css.
   const THEME_GROUPS = [
     ['themeBasic', ['system', 'light', 'dark']],
+    ['themeLive', ['bee', 'cat', 'space', 'aquarium', 'snow', 'arcade']],
     ['themeCalm', ['ocean', 'matcha', 'sunset', 'espresso']],
     ['themeFun', ['cevapi', 'coffee3am', 'panic', 'terminal', 'blueprint', 'chalkboard', 'oldpc', 'comic']]
   ];
@@ -1079,6 +1080,7 @@
   function applyTheme() {
     const theme = THEMES.includes(state.settings.theme) ? state.settings.theme : 'system', root = document.documentElement;
     if (theme === 'system') delete root.dataset.theme; else root.dataset.theme = theme;
+    if (state.settings.effects === false) root.dataset.fx = 'off'; else delete root.dataset.fx;
     const style = getComputedStyle(root), surface = style.getPropertyValue('--surface').trim();
     const dark = style.colorScheme === 'dark';
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = surface || (dark ? '#151E29' : '#FFFFFF'); });
@@ -1113,6 +1115,7 @@
     renderThemePicker();
     $('themeGroup').setAttribute('aria-label', t.theme);
     $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
+    if ($('setEffects')) $('setEffects').checked = s.effects !== false; // absent in an older cached page
     $('setBefore').checked = s.before;
     $('setEvening').checked = s.evening;
     $('setEveningTime').value = s.eveningTime;
@@ -1127,6 +1130,7 @@
 
   function onSettingChange(e) {
     const s = state.settings, id = e.target.id;
+    if (id === 'setEffects') { s.effects = e.target.checked; store.set('settings', JSON.stringify(s)); return applyTheme(); }
     if (id === 'setBefore') s.before = e.target.checked;
     if (id === 'setEvening') s.evening = e.target.checked;
     if (id === 'setLead') s.lead = Number(e.target.value);
@@ -1242,7 +1246,7 @@
   $('examSearch').addEventListener('input', renderExams);
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
-  ['setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id).addEventListener('change', onSettingChange));
+  ['setEffects', 'setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id) && $(id).addEventListener('change', onSettingChange));
   darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); renderExams(); loadQuizzes(false); syncReminders(); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); renderExams(); }, 30000);

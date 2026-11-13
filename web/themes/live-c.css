@@ -1,0 +1,287 @@
+/* Living themes, set C: snow and arcade.
+   Each theme block sets every colour variable plus --f-display, --f-body and --radius, so the
+   picker's preview card (.theme-sw[data-preview=ID]) never inherits another theme's fonts.
+   Shapes and decorations live only under :root[data-theme=ID]. Moving pieces use the twelve
+   .fx <i> elements (hidden by styles.css when "Theme animations" is off or motion is reduced);
+   the few animations outside .fx run only under :not([data-fx="off"]) and stop under
+   prefers-reduced-motion. Only transform and opacity animate. Every picture is an inline SVG
+   drawn for this file. Load after styles.css: the theme blocks tie with its dark-mode block. */
+
+/* ============================================================================================
+   Snow: a Sarajevo winter. Icy blue page, icicles under the header, snow caps on cards and the
+   main button, pine trees and a snowman on the tab bar, snowflakes falling at different speeds.
+   Measured: ink 16.1 on surface, 14.1 on bg; muted 6.5 / 5.7; on-accent on accent 6.5;
+   accent on surface 6.5; danger 6.5; warn 7.6; course text on its tag 4.8 to 6.2 (min p3). */
+:root[data-theme="snow"], .theme-sw[data-preview="snow"] {
+  --bg: #E9F1F8;
+  --surface: #FFFFFF;
+  --ink: #0F2235;
+  --muted: #4A6076;
+  --line: #C9DAE9;
+  --accent: #1D5FA8;
+  --on-accent: #FFFFFF;
+  --danger: #B3261E;
+  --warn-bg: #FFF1DA;
+  --warn-ink: #6E4300;
+  --p0: #C2410C; --p1: #1C6ED6; --p2: #6741D9; --p3: #2B8A3E;
+  --p4: #C2255C; --p5: #0B7285; --p6: #9A6700; --p7: #8B5A2B;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 16px;
+  color-scheme: light;
+}
+.theme-sw[data-preview="snow"]::after {
+  content: ""; position: absolute; top: 2px; right: 4px; width: 11px; height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236FA6D6' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10'/%3E%3Cpath d='M9.5 3.8 12 6l2.5-2.2M9.5 20.2 12 18l2.5 2.2M3.6 10.4l3.2-.5-1-3.1M20.4 13.6l-3.2.5 1 3.1M3.6 13.6l3.2.5-1 3.1M20.4 10.4l-3.2-.5 1-3.1' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Header: a frosty band with icicles hanging below it, and now and then a drop falls off. */
+:root[data-theme="snow"] .app-head {
+  position: relative; z-index: 2;
+  background: linear-gradient(#FFFFFF, #F3F8FC);
+  border-bottom-color: #BCD3E7;
+}
+:root[data-theme="snow"] .app-head::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 12'%3E%3Cpath d='M0 0H30V1.6L27.4 1.8 26 9 24.6 1.8H19L17.6 11.6 16.2 1.8H10.6L9.4 6.6 8.2 1.8H3.6L2.6 4.6 1.6 1.8 0 1.6Z' fill='%23E4F1FB' stroke='%23A9CBE6' stroke-width='.6'/%3E%3C/svg%3E") 0 0 / 30px 12px repeat-x;
+}
+:root[data-theme="snow"] .app-head::before {
+  content: ""; position: absolute; left: calc(50% + 2px); top: calc(100% + 9px); width: 3px; height: 5px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #8DBDE6; opacity: 0; pointer-events: none;
+}
+:root[data-theme="snow"]:not([data-fx="off"]) .app-head::before { animation: snow-drip 6s ease-in 2s infinite; }
+@keyframes snow-drip {
+  0%, 78% { transform: translateY(0); opacity: 0; }
+  82% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(26px); opacity: 0; }
+}
+
+/* Frosty, rounded shapes. */
+:root[data-theme="snow"] .btn { border-radius: 999px; }
+:root[data-theme="snow"] :is(.chip, .link-btn, .icon-btn) { border-radius: 18px; }
+:root[data-theme="snow"] .chip { border-color: #C9DAE9; background: linear-gradient(#FFFFFF, #F4F9FD); }
+:root[data-theme="snow"] .chip[aria-pressed="true"] { background: var(--ink); }
+:root[data-theme="snow"] :is(.status, .course, .empty-card) {
+  border-color: #C4D8EA; box-shadow: 0 2px 0 #D6E5F2, 0 6px 14px rgba(29, 95, 168, .07);
+}
+:root[data-theme="snow"] .blk { border-radius: 9px; }
+:root[data-theme="snow"] .sheet { border-radius: 24px 24px 0 0; box-shadow: inset 0 5px 0 #E1EEF8; }
+
+/* Snow caps: a bumpy white ridge sitting on the top edge, never over the text below it. */
+:root[data-theme="snow"] :is(.status, .course, .empty-card, .card, .btn.primary) { position: relative; }
+:root[data-theme="snow"] :is(.status, .course, .empty-card, .card, .btn.primary)::before {
+  content: ""; position: absolute; left: 8px; right: 8px; top: -6px; height: 11px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 12' preserveAspectRatio='none'%3E%3Cpath d='M1 12 Q0 5 7 4.5 Q13 0 23 3 Q31 .5 40 3.5 Q50 0 60 3 Q69 .5 78 3.5 Q88 0 94 4 Q100 5.5 99 12 Z' fill='%23FFFFFF' stroke='%23B9D3EA' stroke-width='1' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+:root[data-theme="snow"] .card::before { left: 6px; right: 6px; top: -5px; height: 9px; }
+:root[data-theme="snow"] .btn.primary::before { left: 14px; right: 14px; top: -5px; height: 9px; }
+
+/* Tab bar: the selected tab is a frosted pill; pine trees on the left and a snowman on the right
+   stand on its top edge, inside main's side padding so they never cover a card's text. */
+:root[data-theme="snow"] .tabs { position: relative; border-top-color: #BCD3E7; }
+:root[data-theme="snow"] .tabs button[aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-radius: 22px; box-shadow: inset 0 0 0 6px var(--surface);
+}
+:root[data-theme="snow"] .tabs::before,
+:root[data-theme="snow"] .tabs::after {
+  content: ""; position: absolute; bottom: 100%; margin-bottom: -2px; pointer-events: none;
+  background: center bottom / contain no-repeat;
+}
+:root[data-theme="snow"] .tabs::before { left: 0; width: 26px; height: 22px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 30'%3E%3Crect x='8' y='26' width='3' height='4' fill='%236B4A2B'/%3E%3Crect x='28' y='27' width='2.4' height='3' fill='%236B4A2B'/%3E%3Cpath d='M9.5 1 15.5 10H12.5L17.5 18H13.5L19 26.5H0L5.5 18H1.5L6.5 10H3.5Z' fill='%232E6B4E'/%3E%3Cpath d='M9.5 1 12 4.8H7Z M6.5 10H12.5L11.2 12H7.8Z M5.5 18H13.5L12 20H7Z' fill='%23FFFFFF'/%3E%3Cpath d='M29.2 9 33.6 15.5H31.4L35.4 21.5H32.4L36.6 27.5H21.8L26 21.5H23L27 15.5H24.8Z' fill='%233A7E5C'/%3E%3Cpath d='M29.2 9 31 11.8H27.4Z M24.8 15.5H31.4L30.4 17H25.8Z' fill='%23FFFFFF'/%3E%3C/svg%3E"); }
+:root[data-theme="snow"] .tabs::after { right: 1px; width: 17px; height: 24px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 30'%3E%3Cg fill='%23FFFFFF' stroke='%239DB8D0' stroke-width='1'%3E%3Ccircle cx='11' cy='22.5' r='7'/%3E%3Ccircle cx='11' cy='12.5' r='5.2'/%3E%3Ccircle cx='11' cy='5.2' r='4'/%3E%3C/g%3E%3Crect x='6.4' y='8.6' width='9.2' height='2.2' rx='1' fill='%23C0392B'/%3E%3Crect x='12.6' y='9.6' width='2.2' height='5' rx='1' fill='%23C0392B'/%3E%3Ccircle cx='9.6' cy='4.4' r='.8' fill='%2315202D'/%3E%3Ccircle cx='12.4' cy='4.4' r='.8' fill='%2315202D'/%3E%3Cpath d='M11 5.6 15 6.6 11 7.1Z' fill='%23E8590C'/%3E%3Ccircle cx='11' cy='13.6' r='.8' fill='%2315202D'/%3E%3Ccircle cx='11' cy='20' r='.9' fill='%2315202D'/%3E%3Ccircle cx='11' cy='23.4' r='.9' fill='%2315202D'/%3E%3C/svg%3E"); }
+
+/* Snowflakes: twelve flakes, 6 to 14 px, each falling at its own speed with a little sway. */
+:root[data-theme="snow"] .fx { display: block; }
+:root[data-theme="snow"] .fx i {
+  top: 0; width: 8px; height: 8px; opacity: .8;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236FA6D6' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 2v20M3.3 7l17.4 10M3.3 17l17.4-10'/%3E%3Cpath d='M9.5 3.8 12 6l2.5-2.2M9.5 20.2 12 18l2.5 2.2M3.6 10.4l3.2-.5-1-3.1M20.4 13.6l-3.2.5 1 3.1M3.6 13.6l3.2.5-1 3.1M20.4 10.4l-3.2-.5 1-3.1' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: snow-fall-a 14s linear infinite; will-change: transform;
+}
+:root[data-theme="snow"] .fx i:nth-child(even) { animation-name: snow-fall-b; }
+:root[data-theme="snow"] .fx i:nth-child(1)  { left: 4%;  width: 7px;  height: 7px;  animation-duration: 15s; animation-delay: -2s; }
+:root[data-theme="snow"] .fx i:nth-child(2)  { left: 12%; width: 11px; height: 11px; animation-duration: 12s; animation-delay: -9s; }
+:root[data-theme="snow"] .fx i:nth-child(3)  { left: 21%; width: 6px;  height: 6px;  animation-duration: 19s; animation-delay: -5s; opacity: .6; }
+:root[data-theme="snow"] .fx i:nth-child(4)  { left: 29%; width: 13px; height: 13px; animation-duration: 11s; animation-delay: -1s; }
+:root[data-theme="snow"] .fx i:nth-child(5)  { left: 37%; width: 8px;  height: 8px;  animation-duration: 17s; animation-delay: -12s; }
+:root[data-theme="snow"] .fx i:nth-child(6)  { left: 46%; width: 10px; height: 10px; animation-duration: 14s; animation-delay: -7s; }
+:root[data-theme="snow"] .fx i:nth-child(7)  { left: 54%; width: 6px;  height: 6px;  animation-duration: 21s; animation-delay: -15s; opacity: .6; }
+:root[data-theme="snow"] .fx i:nth-child(8)  { left: 62%; width: 14px; height: 14px; animation-duration: 13s; animation-delay: -4s; }
+:root[data-theme="snow"] .fx i:nth-child(9)  { left: 70%; width: 9px;  height: 9px;  animation-duration: 16s; animation-delay: -10s; }
+:root[data-theme="snow"] .fx i:nth-child(10) { left: 79%; width: 7px;  height: 7px;  animation-duration: 18s; animation-delay: -3s; }
+:root[data-theme="snow"] .fx i:nth-child(11) { left: 87%; width: 12px; height: 12px; animation-duration: 12.5s; animation-delay: -8s; }
+:root[data-theme="snow"] .fx i:nth-child(12) { left: 94%; width: 8px;  height: 8px;  animation-duration: 20s; animation-delay: -13s; }
+@keyframes snow-fall-a {
+  0%   { transform: translate(0, -20px) rotate(0deg); }
+  25%  { transform: translate(10px, 25vh) rotate(90deg); }
+  50%  { transform: translate(-4px, 50vh) rotate(180deg); }
+  75%  { transform: translate(9px, 75vh) rotate(270deg); }
+  100% { transform: translate(0, calc(100vh + 20px)) rotate(360deg); }
+}
+@keyframes snow-fall-b {
+  0%   { transform: translate(0, -20px) rotate(0deg); }
+  25%  { transform: translate(-9px, 25vh) rotate(-90deg); }
+  50%  { transform: translate(5px, 50vh) rotate(-180deg); }
+  75%  { transform: translate(-8px, 75vh) rotate(-270deg); }
+  100% { transform: translate(0, calc(100vh + 20px)) rotate(-360deg); }
+}
+
+/* ============================================================================================
+   Arcade: an 8-bit cabinet. Dark screen with scanlines, monospace pixel lettering, stepped
+   corners cut with clip-path, hard offset pixel shadows, the tab bar as a row of round arcade
+   buttons, and small sprites drawn for this file (a blob, coins, a little ship) marching by.
+   Measured: ink 16.0 on surface, 17.7 on bg; muted 8.5 / 9.4; on-accent on accent 12.1;
+   accent on surface 12.1; danger 6.9; warn 10.6; course text on its tag 6.3 to 9.2 (min p0, p4). */
+:root[data-theme="arcade"], .theme-sw[data-preview="arcade"] {
+  --bg: #0C0C1C;
+  --surface: #17172E;
+  --ink: #F4F4FF;
+  --muted: #AEB2DA;
+  --line: #38386A;
+  --accent: #FFD23F;
+  --on-accent: #17172E;
+  --danger: #FF7A7A;
+  --warn-bg: #3A2E05;
+  --warn-ink: #FFE38A;
+  --p0: #FF7A45; --p1: #4DA8FF; --p2: #B58CFF; --p3: #4CE07A;
+  --p4: #FF6FAE; --p5: #2FE3E3; --p6: #E6E64A; --p7: #D9A066;
+  --f-display: ui-monospace, "Cascadia Mono", Consolas, Menlo, "Droid Sans Mono", "Courier New", monospace;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 0px;
+  color-scheme: dark;
+}
+.theme-sw[data-preview="arcade"]::after {
+  content: ""; position: absolute; top: 2px; right: 4px; width: 11px; height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='2' y='0' width='4' height='1' fill='%23B07800'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='1' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='6' y='1' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='2' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23FFF6C8'/%3E%3Crect x='3' y='2' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='2' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%23FFF6C8'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='4' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='5' y='3' width='2' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='4' width='3' height='1' fill='%23FFD23F'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='5' y='4' width='2' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='5' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='5' width='6' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='5' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='6' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='6' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='6' y='6' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='7' width='4' height='1' fill='%23B07800'/%3E%3C/svg%3E") center / contain no-repeat; image-rendering: pixelated;
+}
+:root[data-theme="arcade"] {
+  /* Stepped 4px corners, widened to the bottom right so the 4px offset shadow stays visible. */
+  --arc-clip: polygon(4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% 8px, calc(100% + 4px) 8px,
+    calc(100% + 4px) 100%, 100% 100%, 100% calc(100% + 4px), 8px calc(100% + 4px), 8px 100%, 4px 100%,
+    4px calc(100% - 4px), 0 calc(100% - 4px), 0 4px, 4px 4px);
+  /* Stepped 2px corners with no shadow, for small pieces. */
+  --arc-clip-sm: polygon(2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px),
+    calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px), 0 2px, 2px 2px);
+}
+
+/* Screen: faint scanlines over the page. */
+:root[data-theme="arcade"] main {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(255, 255, 255, .028) 3px 4px);
+  background-attachment: local;
+}
+
+/* Header: a marquee with a dotted light strip along the bottom and pixel lettering. */
+:root[data-theme="arcade"] .app-head { position: relative; background: #101024; }
+:root[data-theme="arcade"] .app-head::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 12px);
+}
+:root[data-theme="arcade"] .app-head h1 {
+  font-size: 16px; line-height: 23px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--accent); text-shadow: 2px 2px 0 #000;
+}
+:root[data-theme="arcade"] .club img { border-radius: 0; }
+:root[data-theme="arcade"] .club { border-radius: 0; }
+:root[data-theme="arcade"] :is(.site-link, .icon-btn, .link-btn) { border-radius: 0; clip-path: var(--arc-clip-sm); }
+
+/* Pixel lettering for headings, labels and codes. */
+:root[data-theme="arcade"] :is(.day-title, .empty-card h2, .sheet-body h2, .quiz-head h2, .set-group h3, .quiz-day h3) {
+  text-transform: uppercase; letter-spacing: .04em; text-shadow: 2px 2px 0 #000;
+}
+:root[data-theme="arcade"] :is(.status .lbl, .quiz-soon .lbl, .lbl-sm, .tag) { font-family: var(--f-display); }
+:root[data-theme="arcade"] .code { letter-spacing: 0; }
+:root[data-theme="arcade"] .blk .code { letter-spacing: -.03em; }
+
+/* Stepped corners and hard pixel shadows on buttons, chips and cards. */
+:root[data-theme="arcade"] :is(.btn, .chip, .status, .card, .course, .empty-card, .quiz, .quiz-soon) {
+  border-radius: 0; clip-path: var(--arc-clip);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, var(--line)) 50%, transparent), 4px 4px 0 #000;
+}
+:root[data-theme="arcade"] .btn.primary { box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .25), inset 3px 3px 0 rgba(255, 255, 255, .35), 4px 4px 0 #000; }
+:root[data-theme="arcade"] .btn { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
+:root[data-theme="arcade"] .chip { font-family: var(--f-display); text-transform: uppercase; font-size: 12.5px; }
+:root[data-theme="arcade"] .item.live .card { box-shadow: inset 0 0 0 2px var(--c), 4px 4px 0 #000; }
+:root[data-theme="arcade"] :is(.btn, .chip, .card):active { transform: translate(3px, 3px); box-shadow: inset 0 0 0 1px var(--line); }
+:root[data-theme="arcade"] :is(.btn, .chip, .card, .site-link, .icon-btn, .link-btn):focus-visible { outline-offset: -4px; }
+:root[data-theme="arcade"] .blk { border-radius: 0; clip-path: var(--arc-clip-sm); }
+:root[data-theme="arcade"] .sheet { border-radius: 0; box-shadow: inset 0 4px 0 var(--accent); }
+:root[data-theme="arcade"] :is(.bar, .bar i, .sw, .dots i, .tag) { border-radius: 0; }
+
+/* Tab bar: a control panel with one round arcade button above each label. The selected one is
+   pressed in and blinks. */
+:root[data-theme="arcade"] .tabs { background: #0A0A18; border-top-color: #2A2A52; }
+:root[data-theme="arcade"] .tabs button {
+  padding-top: 18px; font-family: var(--f-display); font-size: 11px; letter-spacing: .03em; text-transform: uppercase;
+}
+:root[data-theme="arcade"] .tabs button::after {
+  content: ""; position: absolute; top: 7px; left: 50%; width: 15px; height: 15px; margin-left: -7.5px;
+  border-radius: 50%; background: var(--arc-btn, #FF5A5A); opacity: .55;
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, .35), inset 2px 2px 0 rgba(255, 255, 255, .35), 0 2px 0 #000;
+}
+:root[data-theme="arcade"] .tabs button:nth-child(2) { --arc-btn: #FFD23F; }
+:root[data-theme="arcade"] .tabs button:nth-child(3) { --arc-btn: #4CE07A; }
+:root[data-theme="arcade"] .tabs button:nth-child(4) { --arc-btn: #4DA8FF; }
+:root[data-theme="arcade"] .tabs button:nth-child(5) { --arc-btn: #2FE3E3; }
+:root[data-theme="arcade"] .tabs button[aria-selected="true"]::after {
+  opacity: 1; transform: translateY(2px);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .3), 0 0 0 2px rgba(255, 255, 255, .7);
+}
+:root[data-theme="arcade"] .tabs button[aria-selected="true"]::before { left: 20%; right: 20%; border-radius: 0; }
+:root[data-theme="arcade"]:not([data-fx="off"]) .tabs button[aria-selected="true"]::after { animation: arc-blink 1.6s steps(1) infinite; }
+@keyframes arc-blink { 0%, 70% { opacity: 1; } 71%, 100% { opacity: .7; } }
+
+/* Sprites: two blobs walking along the bottom, a coin trail drifting in the gap under the header, two ships
+   crossing the middle. Each spends more than half its loop off screen, so the page is calm most
+   of the time. Pieces 8 to 12 stay hidden. */
+:root[data-theme="arcade"] .fx { display: block; }
+:root[data-theme="arcade"] .fx i {
+  left: 0; background: center / contain no-repeat; image-rendering: pixelated; will-change: transform;
+  transform: translateX(-60px);
+}
+:root[data-theme="arcade"] .fx i:nth-child(n+8) { display: none; }
+:root[data-theme="arcade"] .fx i:nth-child(1),
+:root[data-theme="arcade"] .fx i:nth-child(2) {
+  bottom: 64px; width: 25px; height: 20px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='4' height='1' fill='%234CE07A'/%3E%3Crect x='2' y='1' width='6' height='1' fill='%234CE07A'/%3E%3Crect x='1' y='2' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='3' y='2' width='2' height='1' fill='%23FFFFFF'/%3E%3Crect x='5' y='2' width='1' height='1' fill='%234CE07A'/%3E%3Crect x='6' y='2' width='2' height='1' fill='%23FFFFFF'/%3E%3Crect x='8' y='2' width='1' height='1' fill='%234CE07A'/%3E%3Crect x='1' y='3' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23FFFFFF'/%3E%3Crect x='4' y='3' width='1' height='1' fill='%230C0C1C'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%234CE07A'/%3E%3Crect x='6' y='3' width='1' height='1' fill='%23FFFFFF'/%3E%3Crect x='7' y='3' width='1' height='1' fill='%230C0C1C'/%3E%3Crect x='8' y='3' width='1' height='1' fill='%234CE07A'/%3E%3Crect x='0' y='4' width='10' height='1' fill='%234CE07A'/%3E%3Crect x='0' y='5' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='2' y='5' width='1' height='1' fill='%232FA85A'/%3E%3Crect x='3' y='5' width='4' height='1' fill='%234CE07A'/%3E%3Crect x='7' y='5' width='1' height='1' fill='%232FA85A'/%3E%3Crect x='8' y='5' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='0' y='6' width='10' height='1' fill='%234CE07A'/%3E%3Crect x='0' y='7' width='1' height='1' fill='%234CE07A'/%3E%3Crect x='2' y='7' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='6' y='7' width='2' height='1' fill='%234CE07A'/%3E%3Crect x='9' y='7' width='1' height='1' fill='%234CE07A'/%3E%3C/svg%3E");
+  animation: arc-walk 26s steps(60) infinite;
+}
+:root[data-theme="arcade"] .fx i:nth-child(2) { width: 20px; height: 16px; animation-delay: -1.4s; }
+:root[data-theme="arcade"] .fx i:nth-child(3),
+:root[data-theme="arcade"] .fx i:nth-child(4),
+:root[data-theme="arcade"] .fx i:nth-child(5) {
+  top: 71px; width: 14px; height: 14px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect x='2' y='0' width='4' height='1' fill='%23B07800'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='1' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='6' y='1' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='2' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23FFF6C8'/%3E%3Crect x='3' y='2' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='2' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%23FFF6C8'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='4' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='5' y='3' width='2' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='3' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='4' width='3' height='1' fill='%23FFD23F'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='5' y='4' width='2' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='4' width='1' height='1' fill='%23B07800'/%3E%3Crect x='0' y='5' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='5' width='6' height='1' fill='%23FFD23F'/%3E%3Crect x='7' y='5' width='1' height='1' fill='%23B07800'/%3E%3Crect x='1' y='6' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='6' width='4' height='1' fill='%23FFD23F'/%3E%3Crect x='6' y='6' width='1' height='1' fill='%23B07800'/%3E%3Crect x='2' y='7' width='4' height='1' fill='%23B07800'/%3E%3C/svg%3E");
+  animation: arc-coins 22s steps(10) -9s infinite;
+}
+:root[data-theme="arcade"] .fx i:nth-child(4) { animation-delay: -9.6s; }
+:root[data-theme="arcade"] .fx i:nth-child(5) { animation-delay: -10.2s; }
+:root[data-theme="arcade"] .fx i:nth-child(6),
+:root[data-theme="arcade"] .fx i:nth-child(7) {
+  top: 46%; width: 28px; height: 18px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1' fill='%234DA8FF'/%3E%3Crect x='2' y='1' width='5' height='1' fill='%234DA8FF'/%3E%3Crect x='0' y='2' width='1' height='1' fill='%23FF7A45'/%3E%3Crect x='1' y='2' width='7' height='1' fill='%234DA8FF'/%3E%3Crect x='8' y='2' width='2' height='1' fill='%23E8F6FF'/%3E%3Crect x='0' y='3' width='1' height='1' fill='%23FF7A45'/%3E%3Crect x='1' y='3' width='1' height='1' fill='%23FFD23F'/%3E%3Crect x='2' y='3' width='9' height='1' fill='%234DA8FF'/%3E%3Crect x='0' y='4' width='1' height='1' fill='%23FF7A45'/%3E%3Crect x='1' y='4' width='7' height='1' fill='%234DA8FF'/%3E%3Crect x='8' y='4' width='2' height='1' fill='%23E8F6FF'/%3E%3Crect x='2' y='5' width='5' height='1' fill='%234DA8FF'/%3E%3Crect x='3' y='6' width='2' height='1' fill='%234DA8FF'/%3E%3C/svg%3E");
+  animation: arc-fly 30s steps(18) -18s infinite;
+}
+:root[data-theme="arcade"] .fx i:nth-child(7) { top: 63%; width: 22px; height: 14px; animation-delay: -3s; animation-duration: 34s; }
+@keyframes arc-walk {
+  0%   { transform: translateX(-60px); }
+  40%  { transform: translateX(calc(100vw + 30px)); }
+  100% { transform: translateX(calc(100vw + 30px)); }
+}
+@keyframes arc-coins {
+  0%   { transform: translate(calc(100vw + 30px), 0); }
+  10%  { transform: translate(75vw, -2px); }
+  20%  { transform: translate(50vw, 0); }
+  30%  { transform: translate(25vw, -2px); }
+  40%  { transform: translate(-60px, 0); }
+  100% { transform: translate(-60px, 0); }
+}
+@keyframes arc-fly {
+  0%   { transform: translate(-60px, 0); }
+  15%  { transform: translate(30vw, -8px); }
+  30%  { transform: translate(65vw, 4px); }
+  42%  { transform: translate(calc(100vw + 30px), -6px); }
+  100% { transform: translate(calc(100vw + 30px), -6px); }
+}
+
+/* Reduced motion: styles.css already hides .fx; stop the two animations outside it. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="snow"] .app-head::before { animation: none; opacity: 0; }
+  :root[data-theme="arcade"] .tabs button[aria-selected="true"]::after { animation: none; }
+}

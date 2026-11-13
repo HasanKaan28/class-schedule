@@ -1,0 +1,294 @@
+/* Living themes, set B: space and aquarium.
+   Each theme has one variable block shared by the page (:root[data-theme]) and its picker card
+   (.theme-sw[data-preview]); everything else sits under :root[data-theme="ID"] only.
+   The moving pieces are the empty <i> elements of .fx (styles.css). The app hides .fx when
+   "Theme animations" is off and under prefers-reduced-motion, so every animation in this file
+   lives inside .fx and nothing else moves. Pieces animate transform and opacity only.
+   Shapes change with border-radius, shadows and absolutely placed pseudo-elements, so no box
+   changes size against the default theme.
+   Contrast figures are WCAG ratios, measured with a script. "course text" is the lowest and the
+   highest of the eight course colours as text: color-mix(c 78%, ink) on color-mix(c 16%, surface). */
+
+/* ---------- space: deep space, control-panel shapes ----------
+   ink on surface 15.12, ink on bg 16.62; muted on surface 7.36, on bg 8.08;
+   on-accent on accent 12.73; accent on surface 11.98, on bg 13.16; danger on surface 7.86;
+   warn-ink on warn-bg 10.05; muted on the planet's brightest spot 5.02; course text 6.90 to 8.87. */
+:root[data-theme="space"], .theme-sw[data-preview="space"] {
+  --bg: #070B1A;
+  --surface: #0F1630;
+  --ink: #E8ECFA;
+  --muted: #9AA6C8;
+  --line: #27325C;
+  --accent: #6FE3FF;
+  --on-accent: #04121C;
+  --danger: #FF8A8A;
+  --warn-bg: #3A2E10;
+  --warn-ink: #FFDC8A;
+  --p0: #FF8F5A; --p1: #6CB2FF; --p2: #B7A2FF; --p3: #6EDC8C;
+  --p4: #FF86B4; --p5: #3FD9E0; --p6: #FFD152; --p7: #D7B08A;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 14px;
+  --live-b-rocket: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9.5 18.5 12 23.5l2.5-5z' fill='%23FFB84D'/%3E%3Cpath d='M7.5 13 4.5 18.5h4zM16.5 13l3 5.5h-4z' fill='%23FF7A59'/%3E%3Cpath d='M12 1.5c3 2.6 4.5 6.2 4.5 10.5v6.5h-9V12c0-4.3 1.5-7.9 4.5-10.5z' fill='%23E8ECFA'/%3E%3Ccircle cx='12' cy='9.5' r='2.2' fill='%236FE3FF' stroke='%2327325C'/%3E%3C/svg%3E");
+  color-scheme: dark;
+}
+.theme-sw[data-preview="space"]::after {
+  content: ""; position: absolute; top: 2px; right: 5px; width: 11px; height: 11px;
+  background: var(--live-b-rocket) center / contain no-repeat; transform: rotate(45deg);
+}
+
+/* Behind the page: a still star field and a ringed planet peeking from the bottom right corner.
+   Both are part of main's background, so they stay behind every card and never cover a label. */
+:root[data-theme="space"] main {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3CradialGradient id='g' cx='.36' cy='.3' r='.75'%3E%3Cstop offset='0' stop-color='%23263265'/%3E%3Cstop offset='1' stop-color='%23121837'/%3E%3C/radialGradient%3E%3Cellipse cx='60' cy='60' rx='56' ry='13' fill='none' stroke='%236FE3FF' stroke-opacity='.28' stroke-width='2.5' transform='rotate(-22 60 60)'/%3E%3Ccircle cx='60' cy='60' r='33' fill='url(%23g)'/%3E%3Cpath d='M4 60a56 13 0 0 0 112 0' fill='none' stroke='%236FE3FF' stroke-opacity='.45' stroke-width='2.5' transform='rotate(-22 60 60)'/%3E%3C/svg%3E"),
+    radial-gradient(circle, rgba(232, 236, 250, .75) 0 .7px, transparent 1.3px),
+    radial-gradient(circle, rgba(154, 166, 200, .7) 0 .6px, transparent 1.2px),
+    radial-gradient(circle, rgba(111, 227, 255, .6) 0 .7px, transparent 1.3px);
+  background-repeat: no-repeat, repeat, repeat, repeat;
+  background-position: right -50px bottom -44px, 13px 21px, 71px 97px, 43px 149px;
+  background-size: 150px 150px, 131px 113px, 173px 157px, 211px 239px;
+}
+
+/* Header: a thin glowing horizon instead of the plain border. */
+:root[data-theme="space"] .app-head {
+  border-bottom-color: transparent;
+  background-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 75%, transparent) 30% 70%, transparent);
+  background-size: 100% 1px; background-position: 0 100%; background-repeat: no-repeat;
+  box-shadow: 0 2px 16px -6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+:root[data-theme="space"] .icon-btn { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, var(--line)); }
+:root[data-theme="space"] .site-link {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  box-shadow: 0 0 12px -5px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* Tab bar: a floating control panel. The bar keeps its box; the panel is drawn inside it. */
+:root[data-theme="space"] .tabs { position: relative; background: transparent; border-top-color: transparent; }
+:root[data-theme="space"] .tabs::before {
+  content: ""; position: absolute; inset: 4px 8px 5px; border-radius: 18px; pointer-events: none;
+  background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 1px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+}
+:root[data-theme="space"] .tabs button[aria-selected="true"] { text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent); }
+/* The selected tab's marker moves under the label and glows. */
+:root[data-theme="space"] .tabs button[aria-selected="true"]::before {
+  top: auto; bottom: 10px; left: 30%; right: 30%; border-radius: 3px;
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--accent) 75%, transparent), 0 5px 14px 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Capsule buttons and chips. */
+:root[data-theme="space"] .btn { border-radius: 999px; }
+:root[data-theme="space"] .btn.primary { box-shadow: 0 0 18px -4px color-mix(in srgb, var(--accent) 85%, transparent); }
+:root[data-theme="space"] .btn.ghost { border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+:root[data-theme="space"] .chip { border-radius: 20px; }
+:root[data-theme="space"] .chip.is-today { box-shadow: 0 0 14px -4px color-mix(in srgb, var(--accent) 80%, transparent); }
+
+/* Cards: a thin edge that glows in the course colour. */
+:root[data-theme="space"] .card,
+:root[data-theme="space"] .blk {
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
+  box-shadow: 0 0 12px -3px color-mix(in srgb, var(--c) 55%, transparent);
+}
+:root[data-theme="space"] .item.live .card { box-shadow: 0 0 0 2px var(--c), 0 0 18px -2px color-mix(in srgb, var(--c) 70%, transparent); }
+:root[data-theme="space"] .status { box-shadow: 0 0 18px -6px color-mix(in srgb, var(--c, var(--accent)) 70%, transparent); }
+:root[data-theme="space"] .course,
+:root[data-theme="space"] .empty-card {
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+  box-shadow: 0 0 16px -7px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+:root[data-theme="space"] .sheet {
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -1px 0 color-mix(in srgb, var(--accent) 50%, transparent), 0 -14px 40px -14px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Moving pieces: six twinkling stars in the side gutters, one shooting star, a rocket, a satellite. */
+:root[data-theme="space"] .fx { display: block; }
+:root[data-theme="space"] .fx i:nth-child(-n+6) {
+  width: 10px; height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 6.1 3.9 10 5 6.1 6.1 5 10 3.9 6.1 0 5 3.9 3.9z' fill='%23E8ECFA'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: live-b-twinkle 3.6s ease-in-out infinite;
+}
+:root[data-theme="space"] .fx i:nth-child(1) { left: 3px; top: 14%; }
+:root[data-theme="space"] .fx i:nth-child(2) { right: 3px; top: 27%; animation-duration: 4.4s; animation-delay: -1.3s; }
+:root[data-theme="space"] .fx i:nth-child(3) { left: 5px; top: 47%; width: 7px; height: 7px; animation-delay: -2.1s; }
+:root[data-theme="space"] .fx i:nth-child(4) { right: 4px; top: 56%; width: 8px; height: 8px; animation-duration: 5.2s; animation-delay: -.6s; }
+:root[data-theme="space"] .fx i:nth-child(5) { left: 2px; top: 74%; animation-delay: -3s; }
+:root[data-theme="space"] .fx i:nth-child(6) { right: 5px; top: 70%; width: 7px; height: 7px; animation-duration: 4.8s; animation-delay: -1.9s; }
+:root[data-theme="space"] .fx i:nth-child(7) {
+  top: 13%; right: -90px; width: 84px; height: 2px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, #FFFFFF, rgba(111, 227, 255, .5) 30%, transparent);
+  animation: live-b-shoot 19s linear 4s infinite;
+}
+:root[data-theme="space"] .fx i:nth-child(8) {
+  left: -40px; top: 80%; width: 26px; height: 26px;
+  background: var(--live-b-rocket) center / contain no-repeat;
+  animation: live-b-rocket 46s linear 2s infinite;
+}
+:root[data-theme="space"] .fx i:nth-child(9) {
+  left: 100%; top: 22%; width: 24px; height: 24px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 9.5h7v5H1zM16 9.5h7v5h-7z' fill='%236CB2FF'/%3E%3Cpath d='M4.5 9.5v5M19.5 9.5v5M8 12h1M15 12h1M12 8V5.5' stroke='%239AA6C8' stroke-width='1.2'/%3E%3Crect x='9' y='8' width='6' height='8' rx='1.2' fill='%23E8ECFA'/%3E%3Ccircle cx='12' cy='4.5' r='1.5' fill='%23FFD152'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: live-b-satellite 61s linear 20s infinite;
+}
+@keyframes live-b-twinkle {
+  0%, 100% { opacity: .15; transform: scale(.6); }
+  50% { opacity: 1; transform: scale(1); }
+}
+/* Waits off screen for most of the cycle, then falls to the lower left in about 2.5 s. */
+@keyframes live-b-shoot {
+  0%, 86% { opacity: 0; transform: rotate(-18deg) translateX(0); }
+  88%, 97% { opacity: .9; }
+  100% { opacity: 0; transform: rotate(-18deg) translateX(-125vw); }
+}
+/* Crosses in about 19 s, then stays off screen until the next lap. */
+@keyframes live-b-rocket {
+  0% { transform: translate(0, 0) rotate(58deg); }
+  42%, 100% { transform: translate(calc(100vw + 80px), -38vh) rotate(58deg); }
+}
+@keyframes live-b-satellite {
+  0% { transform: translate(0, 0) rotate(-24deg); }
+  38%, 100% { transform: translate(calc(-100vw - 60px), 9vh) rotate(-24deg); }
+}
+
+/* ---------- aquarium: light water, bubble shapes, a sand bed for the tab bar ----------
+   ink on surface 13.67, ink on bg 11.81; muted on surface 6.48, on bg 5.59, on the deepest water 4.94;
+   on-accent on accent 6.40; accent on surface 6.17, on bg 5.33, on the deepest water 4.71;
+   danger on surface 6.21; warn-ink on warn-bg 7.69; on the sand: muted 5.51, accent 5.25, ink 11.62;
+   course text 5.01 to 5.67. */
+:root[data-theme="aquarium"], .theme-sw[data-preview="aquarium"] {
+  --bg: #D5EFF5;
+  --surface: #F6FCFD;
+  --ink: #062F3D;
+  --muted: #3C616E;
+  --line: #AFD9E3;
+  --accent: #00687E;
+  --on-accent: #FFFFFF;
+  --danger: #B02E24;
+  --warn-bg: #FFF0C2;
+  --warn-ink: #654500;
+  --p0: #C7461A; --p1: #1C6BCB; --p2: #7350D6; --p3: #217A3A;
+  --p4: #BD2A6C; --p5: #00797D; --p6: #6E7200; --p7: #8A5A32;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 18px;
+  --live-b-fish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 16'%3E%3Cpath d='M1 3l8 5-8 5c1.6-3.3 1.6-6.7 0-10z' fill='%23E2622E'/%3E%3Cellipse cx='16.5' cy='8' rx='10' ry='5.6' fill='%23F28444'/%3E%3Cpath d='M12.5 2.9c2.2-2 5-2 6.6-.2z' fill='%23E2622E'/%3E%3Cpath d='M14 9.5c1.5 1.6 3.4 1.6 4.2.2z' fill='%23FFD9A8'/%3E%3Ccircle cx='22.3' cy='6.6' r='1.4' fill='%23062F3D'/%3E%3Ccircle cx='22.7' cy='6.2' r='.45' fill='%23FFF'/%3E%3C/svg%3E");
+  color-scheme: light;
+}
+.theme-sw[data-preview="aquarium"]::after {
+  content: ""; position: absolute; top: 3px; right: 5px; width: 16px; height: 9px;
+  background: var(--live-b-fish) center / contain no-repeat;
+}
+
+/* The water gets a little deeper towards the bottom. */
+:root[data-theme="aquarium"] main {
+  background-image: linear-gradient(to bottom, transparent 25%, color-mix(in srgb, var(--accent) 9%, transparent));
+}
+
+/* Header: a wavy water line hangs under it instead of the straight border. */
+:root[data-theme="aquarium"] .app-head { position: relative; z-index: 2; border-bottom-color: transparent; }
+:root[data-theme="aquarium"] .app-head::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 8px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8'%3E%3Cpath d='M0 0H40V4Q35 8 30 4T20 4T10 4T0 4Z' fill='%23F6FCFD'/%3E%3Cpath d='M40 4Q35 8 30 4T20 4T10 4T0 4' fill='none' stroke='%23AFD9E3'/%3E%3C/svg%3E") 0 0 / 40px 8px repeat-x;
+}
+:root[data-theme="aquarium"] .icon-btn,
+:root[data-theme="aquarium"] .site-link {
+  background-color: var(--surface);
+  background-image: radial-gradient(ellipse 7px 4px at 28% 22%, #FFFFFF, transparent);
+  box-shadow: inset 0 -3px 6px -3px color-mix(in srgb, var(--accent) 40%, transparent), inset 0 0 0 1px var(--line);
+}
+
+/* Tab bar: the sand bed, with a dune line on top. The selected tab gets a pearl. */
+:root[data-theme="aquarium"] .tabs { position: relative; background: #F4E8C8; border-top-color: transparent; }
+:root[data-theme="aquarium"] .tabs::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: calc(100% + 1px); height: 7px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 7'%3E%3Cpath d='M0 7H56V4Q42 -1 28 4T0 4Z' fill='%23F4E8C8'/%3E%3C/svg%3E") 0 0 / 56px 7px repeat-x;
+}
+:root[data-theme="aquarium"] .tabs button[aria-selected="true"]::before {
+  top: 6px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #FFFFFF 0 20%, var(--accent) 26%);
+}
+
+/* Bubble-round day chips with a glint. */
+:root[data-theme="aquarium"] .chip {
+  border-radius: 50%;
+  background-image: radial-gradient(ellipse 9px 5px at 30% 20%, rgba(255, 255, 255, .95), transparent);
+  box-shadow: inset 0 -5px 8px -4px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+/* Soft water-drop buttons: round everywhere except the tip at the top left. */
+:root[data-theme="aquarium"] .btn { border-radius: 8px 24px 24px 24px; }
+:root[data-theme="aquarium"] .btn.primary { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .28), inset 0 -3px 0 rgba(0, 40, 55, .2); }
+:root[data-theme="aquarium"] .btn.ghost { background: var(--surface); box-shadow: inset 0 -3px 6px -3px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+/* Cards: glassy, with a lit top edge and a soft shadow in the water. */
+:root[data-theme="aquarium"] .card,
+:root[data-theme="aquarium"] .status,
+:root[data-theme="aquarium"] .course,
+:root[data-theme="aquarium"] .empty-card { box-shadow: inset 0 1px 0 #FFFFFF, 0 4px 10px -5px rgba(0, 70, 90, .35); }
+:root[data-theme="aquarium"] .item.live .card { box-shadow: 0 0 0 2px var(--c), 0 4px 10px -5px rgba(0, 70, 90, .35); }
+:root[data-theme="aquarium"] .blk { border-radius: 10px; }
+:root[data-theme="aquarium"] .sheet { border-radius: 28px 28px 0 0; }
+
+/* Moving pieces: five bubbles, three fish at different depths, three seaweed blades on the sand. */
+:root[data-theme="aquarium"] .fx { display: block; }
+:root[data-theme="aquarium"] .fx i:nth-child(-n+5) {
+  top: 100%; width: 9px; height: 9px; border-radius: 50%;
+  border: 1px solid rgba(0, 104, 126, .55);
+  background: radial-gradient(circle at 32% 30%, #FFFFFF 0 20%, rgba(255, 255, 255, .3) 24%);
+  animation: live-b-bubble 15s linear infinite;
+}
+:root[data-theme="aquarium"] .fx i:nth-child(1) { left: 4px; }
+:root[data-theme="aquarium"] .fx i:nth-child(2) { left: 24%; width: 6px; height: 6px; animation-duration: 19s; animation-delay: -7s; }
+:root[data-theme="aquarium"] .fx i:nth-child(3) { left: 52%; width: 11px; height: 11px; animation-duration: 17s; animation-delay: -3s; }
+:root[data-theme="aquarium"] .fx i:nth-child(4) { left: 78%; width: 7px; height: 7px; animation-duration: 21s; animation-delay: -12s; }
+:root[data-theme="aquarium"] .fx i:nth-child(5) { right: 4px; width: 8px; height: 8px; animation-duration: 13s; animation-delay: -5s; }
+:root[data-theme="aquarium"] .fx i:nth-child(6) {
+  left: -34px; top: 31%; width: 28px; height: 16px;
+  background: var(--live-b-fish) center / contain no-repeat;
+  animation: live-b-swim 41s linear 1s infinite;
+}
+:root[data-theme="aquarium"] .fx i:nth-child(7) {
+  left: 100%; top: 57%; width: 24px; height: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 14'%3E%3Cpath d='M1 2l7 5-7 5c1.4-3.3 1.4-6.7 0-10z' fill='%23F2C230'/%3E%3Cellipse cx='14.5' cy='7' rx='8.5' ry='5' fill='%232F86D6'/%3E%3Cpath d='M11 2.5c2-1.8 4.4-1.8 5.8-.2z' fill='%231B5FA8'/%3E%3Ccircle cx='19.4' cy='5.8' r='1.25' fill='%23062F3D'/%3E%3Ccircle cx='19.7' cy='5.5' r='.4' fill='%23FFF'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: live-b-swim-back 53s linear 9s infinite;
+}
+:root[data-theme="aquarium"] .fx i:nth-child(8) {
+  left: -26px; top: 76%; width: 20px; height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 12'%3E%3Cpath d='M1 2l6 4-6 4c1.2-2.7 1.2-5.3 0-8z' fill='%23D99A00'/%3E%3Cellipse cx='12' cy='6' rx='7' ry='4.3' fill='%23F2B705'/%3E%3Ccircle cx='16' cy='5' r='1.1' fill='%23062F3D'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: live-b-swim 67s linear 22s infinite;
+}
+/* Seaweed stands in the side gutters, rooted in the sand just above the 57 px tab bar. */
+:root[data-theme="aquarium"] .fx i:nth-child(n+9):nth-child(-n+11) {
+  bottom: 55px; width: 14px; height: 44px; transform-origin: 50% 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 44' preserveAspectRatio='none'%3E%3Cpath d='M7 44C2 38 12 33 7 27S2 17 7 11C9 8 8 4 7 1' fill='none' stroke='%231F9D6B' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M7 44c4-4-2-8 1-12' fill='none' stroke='%2357C08F' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  animation: live-b-sway 5.5s ease-in-out infinite alternate;
+}
+:root[data-theme="aquarium"] .fx i:nth-child(9) { left: 1px; }
+:root[data-theme="aquarium"] .fx i:nth-child(10) { right: 1px; height: 38px; animation-duration: 6.5s; animation-delay: -2s; }
+:root[data-theme="aquarium"] .fx i:nth-child(11) { right: 11px; width: 11px; height: 26px; animation-duration: 4.8s; animation-delay: -1s; }
+/* Rises from below the tab bar and pops before it reaches the header. */
+@keyframes live-b-bubble {
+  0% { opacity: 0; transform: translate(0, 0); }
+  6%, 84% { opacity: .85; }
+  35% { transform: translate(7px, -34vh); }
+  65% { transform: translate(-5px, -62vh); }
+  92%, 100% { opacity: 0; transform: translate(4px, -86vh); }
+}
+/* Each fish crosses in under half of its cycle, then stays off screen for the rest. */
+@keyframes live-b-swim {
+  0% { transform: translate(0, 0); }
+  11% { transform: translate(27vw, -7px); }
+  22% { transform: translate(55vw, 5px); }
+  33% { transform: translate(82vw, -6px); }
+  44%, 100% { transform: translate(calc(100vw + 70px), 0); }
+}
+@keyframes live-b-swim-back {
+  0% { transform: translate(0, 0) scaleX(-1); }
+  12% { transform: translate(-28vw, 6px) scaleX(-1); }
+  24% { transform: translate(-56vw, -5px) scaleX(-1); }
+  36% { transform: translate(-84vw, 6px) scaleX(-1); }
+  46%, 100% { transform: translate(calc(-100vw - 70px), 0) scaleX(-1); }
+}
+@keyframes live-b-sway {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}

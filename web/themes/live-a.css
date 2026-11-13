@@ -1,0 +1,265 @@
+/* Living themes: bee, cat. The whole interface takes on the idea, not only the colours.
+   Each variable block sets every colour variable of styles.css and also paints the picker preview.
+   Everything else is under :root[data-theme=ID]. The pictures are SVG drawn in this file, nothing is downloaded.
+   Moving things: the .fx layer (hidden by the app when "Theme animations" is off or the phone asks for
+   reduced motion) and a few small animations outside it (resting bee, tails, tab cat), which are written under :not([data-fx="off"])
+   and switched off at the end of the file under prefers-reduced-motion. Only transform and opacity move.
+   No size, padding or margin differs from the default theme, so nothing shifts.
+   Ratios are WCAG contrast ratios, measured by the script that wrote this file.
+   "course text" is the lowest and highest of the eight course colours,
+   as color-mix(c 78%, ink) on color-mix(c 16%, surface). */
+
+/* ============================================================================================
+   bee: light, honey and wax.
+   ink on surface 16.61, ink on bg 15.52 | muted on surface 7.04, muted on bg 6.58
+   on-accent on accent 6.39 | accent as text on surface 6.22, on bg 5.82 | danger on surface 6.37
+   warn-ink on warn-bg 7.29 | course text 5.15 (p6) to 6.95 (p7) | muted on a course card 5.70 or more
+   The primary button is honey with ink text, not --accent: ink on it 8.86 to 11.85.
+   ink on the iuseng.club pill 14.17 | muted on a comb line 5.48, on a honey cell 6.12
+   ============================================================================================ */
+:root[data-theme="bee"], .theme-sw[data-preview="bee"] {
+  --bg: #FFF4D2; --surface: #FFFCF2; --ink: #261A04; --muted: #6A5424; --line: #E8D28E;
+  --accent: #8A5200; --on-accent: #FFFFFF;
+  --danger: #B3261E; --warn-bg: #FFDDB5; --warn-ink: #6B3A00;
+  --p0: #C2410C; --p1: #1D6FB8; --p2: #6D4BC4; --p3: #2E7D32;
+  --p4: #B8336A; --p5: #0C7480; --p6: #8F6B00; --p7: #744B3A;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 12px;
+  color-scheme: light;
+}
+:root[data-theme="bee"] {
+  --la-bee: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' viewBox='0 0 28 24'%3E%3Cellipse cx='11' cy='7.5' rx='4.6' ry='6.2' transform='rotate(-24 11 7.5)' fill='%23FFFFFF' fill-opacity='.92' stroke='%239FB3C8' stroke-width='.8'/%3E%3Cellipse cx='16.5' cy='7' rx='4' ry='5.6' transform='rotate(14 16.5 7)' fill='%23FFFFFF' fill-opacity='.78' stroke='%239FB3C8' stroke-width='.8'/%3E%3Cpath d='M4.6 16.6L.8 15.4L4.4 14.2Z' fill='%23261A04'/%3E%3CclipPath id='b'%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3'/%3E%3C/clipPath%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3' fill='%23F7B81F'/%3E%3Cg clip-path='url(%23b)' fill='%23261A04'%3E%3Crect x='7' y='8' width='2.7' height='15'/%3E%3Crect x='12.1' y='8' width='2.7' height='15'/%3E%3C/g%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3' fill='none' stroke='%23261A04' stroke-width='.9'/%3E%3Ccircle cx='21.6' cy='15' r='4.3' fill='%23261A04'/%3E%3Ccircle cx='23.1' cy='14' r='1.1' fill='%23FFFFFF'/%3E%3Cpath d='M22 11C22.3 8.6 23.6 7.4 25.4 7.2M24 11.6C25 10 26.2 9.5 27.4 9.8' fill='none' stroke='%23261A04' stroke-width='.9' stroke-linecap='round'/%3E%3C/svg%3E");
+  --la-drip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='15' viewBox='0 0 160 15'%3E%3ClinearGradient id='h' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23F7B81F'/%3E%3Cstop offset='1' stop-color='%23F4AE12'/%3E%3C/linearGradient%3E%3Cpath d='M0 0H160V3H153.6Q152 3 152 4.6V5A2 2 0 0 1 148 5V4.6Q148 3 146.4 3H135.6Q134 3 134 4.6V9.5A3 3 0 0 1 128 9.5V4.6Q128 3 126.4 3H108.2Q106.6 3 106.6 4.6V7.4A2.6 2.6 0 0 1 101.4 7.4V4.6Q101.4 3 99.8 3H91.6Q90 3 90 4.6V5.2A2 2 0 0 1 86 5.2V4.6Q86 3 84.4 3H68Q66.4 3 66.4 4.6V10.6A3.4 3.4 0 0 1 59.6 10.6V4.6Q59.6 3 58 3H41.8Q40.2 3 40.2 4.6V5.8A2.2 2.2 0 0 1 35.8 5.8V4.6Q35.8 3 34.2 3H18.6Q17 3 17 4.6V8.5A3 3 0 0 1 11 8.5V4.6Q11 3 9.4 3H0Z' fill='url(%23h)'/%3E%3Cpath d='M12.6 6V9.4M61.4 6.5V11M129.6 6V10.2' fill='none' stroke='%23FFFFFF' stroke-opacity='.55' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+  --la-honey: linear-gradient(#FFD252, #F4AE12);
+}
+.theme-sw[data-preview="bee"]::after {
+  content: ""; position: absolute; top: 2px; right: 5px; width: 13px; height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' viewBox='0 0 28 24'%3E%3Cellipse cx='11' cy='7.5' rx='4.6' ry='6.2' transform='rotate(-24 11 7.5)' fill='%23FFFFFF' fill-opacity='.92' stroke='%239FB3C8' stroke-width='.8'/%3E%3Cellipse cx='16.5' cy='7' rx='4' ry='5.6' transform='rotate(14 16.5 7)' fill='%23FFFFFF' fill-opacity='.78' stroke='%239FB3C8' stroke-width='.8'/%3E%3Cpath d='M4.6 16.6L.8 15.4L4.4 14.2Z' fill='%23261A04'/%3E%3CclipPath id='b'%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3'/%3E%3C/clipPath%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3' fill='%23F7B81F'/%3E%3Cg clip-path='url(%23b)' fill='%23261A04'%3E%3Crect x='7' y='8' width='2.7' height='15'/%3E%3Crect x='12.1' y='8' width='2.7' height='15'/%3E%3C/g%3E%3Cellipse cx='13' cy='15.5' rx='9' ry='6.3' fill='none' stroke='%23261A04' stroke-width='.9'/%3E%3Ccircle cx='21.6' cy='15' r='4.3' fill='%23261A04'/%3E%3Ccircle cx='23.1' cy='14' r='1.1' fill='%23FFFFFF'/%3E%3Cpath d='M22 11C22.3 8.6 23.6 7.4 25.4 7.2M24 11.6C25 10 26.2 9.5 27.4 9.8' fill='none' stroke='%23261A04' stroke-width='.9' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Honeycomb behind the content, a few cells full. */
+:root[data-theme="bee"] main { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='96' viewBox='0 0 56 96'%3E%3Cpath d='M42 0L56 8L56 24L42 32L28 24L28 8ZM14 48L28 56L28 72L14 80L0 72L0 56Z' fill='rgb(247,184,31)' fill-opacity='0.15'/%3E%3Cpath d='M28 24L42 32L42 48L28 56L14 48L14 32Z' fill='rgb(247,184,31)' fill-opacity='0.075'/%3E%3Cpath d='M0 -24L14 -16L14 0L0 8L-14 0L-14 -16ZM28 -24L42 -16L42 0L28 8L14 0L14 -16ZM56 -24L70 -16L70 0L56 8L42 0L42 -16ZM14 0L28 8L28 24L14 32L0 24L0 8ZM42 0L56 8L56 24L42 32L28 24L28 8ZM0 24L14 32L14 48L0 56L-14 48L-14 32ZM28 24L42 32L42 48L28 56L14 48L14 32ZM56 24L70 32L70 48L56 56L42 48L42 32ZM14 48L28 56L28 72L14 80L0 72L0 56ZM42 48L56 56L56 72L42 80L28 72L28 56ZM0 72L14 80L14 96L0 104L-14 96L-14 80ZM28 72L42 80L42 96L28 104L14 96L14 80ZM56 72L70 80L70 96L56 104L42 96L42 80ZM14 96L28 104L28 120L14 128L0 120L0 104ZM42 96L56 104L56 120L42 128L28 120L28 104Z' fill='none' stroke='rgb(176,120,0)' stroke-opacity='0.17' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 56px 96px; }
+
+/* Header: honey runs off its lower edge. */
+:root[data-theme="bee"] .app-head { position: relative; z-index: 2; border-bottom-color: #D9940A; }
+:root[data-theme="bee"] .app-head::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 15px;
+  background: var(--la-drip) 0 0 / 160px 15px repeat-x; pointer-events: none;
+}
+:root[data-theme="bee"] .icon-btn { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 1.1L36.4 10.55L36.4 29.45L20 38.9L3.6 29.45L3.6 10.55Z' fill='%23F7B81F' fill-opacity='.2' stroke='%23D9940A' stroke-opacity='.75' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 40px 40px no-repeat; }
+:root[data-theme="bee"] .site-link { border-color: #D9940A; background: #FFE9A6; color: var(--ink); }
+
+/* Tab bar: a wax edge on top, a honey cell over the selected tab. */
+:root[data-theme="bee"] .tabs { position: relative; z-index: 2; border-top-color: transparent; }
+:root[data-theme="bee"] .tabs::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='7' viewBox='0 0 24 7'%3E%3Cpath d='M0 7L12 .8L24 7Z' fill='%23FFFCF2'/%3E%3Cpath d='M0 7L12 .8L24 7' fill='none' stroke='%23E8D28E' stroke-width='1.2'/%3E%3C/svg%3E") 0 0 / 24px 7px repeat-x; pointer-events: none;
+}
+:root[data-theme="bee"] .tabs button[aria-selected="true"]::before {
+  top: -11px; left: 50%; right: auto; width: 18px; height: 20px; margin-left: -9px; border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='20' viewBox='0 0 18 20'%3E%3Cpath d='M9 1L16.8 5.5L16.8 14.5L9 19L1.2 14.5L1.2 5.5Z' fill='%23F7B81F' stroke='%23D9940A' stroke-width='1.3' stroke-linejoin='round'/%3E%3Cpath d='M5 7.2L9 4.9' fill='none' stroke='%23FFFFFF' stroke-opacity='.7' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Buttons: six-sided. clip-path also cuts the focus ring, so focus is drawn inside the shape. */
+:root[data-theme="bee"] .btn { border-radius: 0; clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%); }
+:root[data-theme="bee"] .btn.primary { background: var(--la-honey); color: var(--ink); box-shadow: inset 0 -3px 0 rgba(138, 82, 0, .3); }
+:root[data-theme="bee"] .btn.primary:focus-visible { outline: 0; box-shadow: inset 0 0 0 3px var(--ink); }
+:root[data-theme="bee"] .btn.ghost, :root[data-theme="bee"] .btn.danger { position: relative; isolation: isolate; border-color: transparent; background: var(--line); }
+:root[data-theme="bee"] .btn.danger { background: color-mix(in srgb, var(--danger) 45%, var(--surface)); }
+:root[data-theme="bee"] .btn.ghost::before, :root[data-theme="bee"] .btn.danger::before {
+  content: ""; position: absolute; inset: .5px; z-index: -1; clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%); background: var(--surface);
+}
+:root[data-theme="bee"] .btn.ghost:focus-visible, :root[data-theme="bee"] .btn.danger:focus-visible { outline: 0; background: var(--accent); }
+:root[data-theme="bee"] .btn.ghost:focus-visible::before, :root[data-theme="bee"] .btn.danger:focus-visible::before { inset: 2px; }
+
+/* Day chips: cells of the comb. The chip is the outline, ::before is the wax inside it. */
+:root[data-theme="bee"] .chip { position: relative; isolation: isolate; border-color: transparent; background: var(--line); clip-path: polygon(50% 0, 100% 24%, 100% 76%, 50% 100%, 0 76%, 0 24%); }
+:root[data-theme="bee"] .chip::before { content: ""; position: absolute; inset: .5px; z-index: -1; clip-path: polygon(50% 0, 100% 24%, 100% 76%, 50% 100%, 0 76%, 0 24%); background: var(--surface); }
+:root[data-theme="bee"] .chip.is-today { background: var(--accent); }
+:root[data-theme="bee"] .chip[aria-pressed="true"] { background: var(--ink); color: var(--ink); }
+:root[data-theme="bee"] .chip[aria-pressed="true"]::before { background: var(--la-honey); }
+:root[data-theme="bee"] .chip:focus-visible { outline: 0; background: var(--accent); }
+:root[data-theme="bee"] .chip:focus-visible::before { inset: 2px; }
+:root[data-theme="bee"] .dots i, :root[data-theme="bee"] .sw { border-radius: 0; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+
+/* Cards: wax, with a little comb. A bee rests on the "now / next" card. */
+:root[data-theme="bee"] .status, :root[data-theme="bee"] .empty-card { position: relative; isolation: isolate; background-image: linear-gradient(#FFFCF2, #FFF7DE); }
+:root[data-theme="bee"] .course { background-image: linear-gradient(#FFFCF2, #FFF7DE); }
+:root[data-theme="bee"] .status::after, :root[data-theme="bee"] .empty-card::after {
+  content: ""; position: absolute; top: 9px; right: 10px; width: 39px; height: 39px; z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='39' height='39' viewBox='0 0 39 39'%3E%3Cpath d='M10 1.4L18.3 6.2L18.3 15.8L10 20.6L1.7 15.8L1.7 6.2Z' fill='%23F7B81F' fill-opacity='0.5' stroke='%23D9940A' stroke-opacity='.55' stroke-width='1.1' stroke-linejoin='round'/%3E%3Cpath d='M28.5 1.4L36.8 6.2L36.8 15.8L28.5 20.6L20.2 15.8L20.2 6.2Z' fill='%23F7B81F' fill-opacity='0.22' stroke='%23D9940A' stroke-opacity='.55' stroke-width='1.1' stroke-linejoin='round'/%3E%3Cpath d='M19.25 17.9L27.55 22.7L27.55 32.3L19.25 37.1L10.95 32.3L10.95 22.7Z' fill='%23F7B81F' fill-opacity='0.34' stroke='%23D9940A' stroke-opacity='.55' stroke-width='1.1' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; pointer-events: none;
+}
+:root[data-theme="bee"] .status::before, :root[data-theme="bee"] .empty-card::before {
+  content: ""; position: absolute; top: -16px; right: 40px; width: 21px; height: 18px;
+  background: var(--la-bee) center / contain no-repeat; pointer-events: none;
+}
+:root[data-theme="bee"] .card { position: relative; isolation: isolate; }
+:root[data-theme="bee"] .card::after {
+  content: ""; position: absolute; right: 8px; bottom: 6px; width: 30px; height: 30px; z-index: -1;
+  background: var(--c); opacity: .2; pointer-events: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='39' height='39' viewBox='0 0 39 39'%3E%3Cpath d='M10 1.4L18.3 6.2L18.3 15.8L10 20.6L1.7 15.8L1.7 6.2ZM28.5 1.4L36.8 6.2L36.8 15.8L28.5 20.6L20.2 15.8L20.2 6.2ZM19.25 17.9L27.55 22.7L27.55 32.3L19.25 37.1L10.95 32.3L10.95 22.7Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='39' height='39' viewBox='0 0 39 39'%3E%3Cpath d='M10 1.4L18.3 6.2L18.3 15.8L10 20.6L1.7 15.8L1.7 6.2ZM28.5 1.4L36.8 6.2L36.8 15.8L28.5 20.6L20.2 15.8L20.2 6.2ZM19.25 17.9L27.55 22.7L27.55 32.3L19.25 37.1L10.95 32.3L10.95 22.7Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:root[data-theme="bee"] .blk { border-radius: 4px; }
+:root[data-theme="bee"] .sheet { background-image: var(--la-drip); background-size: 160px 15px; background-repeat: repeat-x; }
+
+/* Bees: five, each on its own slow way across the screen (the piece) while it flies small loops (::before). */
+:root[data-theme="bee"] .fx { display: block; }
+:root[data-theme="bee"] .fx i:nth-child(-n+5) { left: 0; top: 0; width: 26px; height: 22px; will-change: transform; }
+:root[data-theme="bee"] .fx i:nth-child(-n+5)::before {
+  content: ""; position: absolute; inset: 0; background: var(--la-bee) center / contain no-repeat;
+  animation: la-bee-loop 5.5s linear infinite;
+}
+:root[data-theme="bee"] .fx i:nth-child(1) { animation: la-bee-a 32s linear infinite; }
+:root[data-theme="bee"] .fx i:nth-child(2) { animation: la-bee-b 41s linear -12s infinite; }
+:root[data-theme="bee"] .fx i:nth-child(3) { animation: la-bee-c 37s linear -25s infinite; }
+:root[data-theme="bee"] .fx i:nth-child(4) { animation: la-bee-d 46s linear -6s infinite; }
+:root[data-theme="bee"] .fx i:nth-child(5) { animation: la-bee-e 52s linear -30s infinite; }
+:root[data-theme="bee"] .fx i:nth-child(2)::before { animation-duration: 7s; animation-direction: reverse; }
+:root[data-theme="bee"] .fx i:nth-child(3)::before { animation-name: la-bee-loop-wide; animation-duration: 8s; }
+:root[data-theme="bee"] .fx i:nth-child(4)::before { animation-duration: 6.2s; animation-delay: -2s; }
+:root[data-theme="bee"] .fx i:nth-child(5)::before { animation-name: la-bee-loop-wide; animation-duration: 9s; animation-direction: reverse; }
+/* A circle that keeps the bee upright: turn, step out, turn back. */
+@keyframes la-bee-loop { from { transform: rotate(0deg) translateX(14px) rotate(-8deg); } to { transform: rotate(360deg) translateX(14px) rotate(-368deg); } }
+@keyframes la-bee-loop-wide { from { transform: rotate(0deg) translateX(22px) rotate(-8deg); } to { transform: rotate(360deg) translateX(22px) rotate(-368deg); } }
+@keyframes la-bee-a {
+  0% { transform: translate(-50px, 24vh); } 18% { transform: translate(24vw, 15vh); } 36% { transform: translate(48vw, 27vh); }
+  54% { transform: translate(72vw, 17vh); } 72%, 100% { transform: translate(calc(100vw + 50px), 25vh); }
+}
+@keyframes la-bee-b {
+  0% { transform: translate(calc(100vw + 50px), 58vh) scaleX(-1); } 20% { transform: translate(70vw, 66vh) scaleX(-1); }
+  42% { transform: translate(44vw, 52vh) scaleX(-1); } 62% { transform: translate(18vw, 62vh) scaleX(-1); }
+  80%, 100% { transform: translate(-60px, 54vh) scaleX(-1); }
+}
+@keyframes la-bee-c {
+  0% { transform: translate(-50px, 82vh); } 25% { transform: translate(28vw, 64vh); } 50% { transform: translate(55vw, 46vh); }
+  70% { transform: translate(80vw, 38vh); } 85%, 100% { transform: translate(calc(100vw + 50px), 14vh); }
+}
+@keyframes la-bee-d {
+  0% { transform: translate(calc(100vw + 50px), 9vh) scaleX(-1); } 22% { transform: translate(66vw, 5vh) scaleX(-1); }
+  44% { transform: translate(38vw, 12vh) scaleX(-1); } 60%, 100% { transform: translate(-60px, 7vh) scaleX(-1); }
+}
+@keyframes la-bee-e {
+  0% { transform: translate(-50px, 70vh); } 30% { transform: translate(30vw, 78vh); } 60% { transform: translate(64vw, 70vh); }
+  85%, 100% { transform: translate(calc(100vw + 50px), 80vh); }
+}
+/* The resting bee breathes. */
+:root[data-theme="bee"]:not([data-fx="off"]) .status::before, :root[data-theme="bee"]:not([data-fx="off"]) .empty-card::before { animation: la-bob 1.8s cubic-bezier(.37, 0, .63, 1) infinite alternate; }
+@keyframes la-bob { to { transform: translateY(-2px); } }
+
+/* ============================================================================================
+   cat: warm dusk, cats around the controls.
+   ink on surface 12.26, ink on bg 13.98 | muted on surface 6.58, muted on bg 7.50
+   on-accent on accent 8.12 | accent as text on surface 6.93, on bg 7.90 | danger on surface 6.49
+   warn-ink on warn-bg 9.47 | course text 5.48 (p0) to 6.74 (p6) | muted on a course card 4.69 or more
+   muted on the lightest point of the backdrop 5.72 | accent on the iuseng.club pill 5.49
+   ============================================================================================ */
+:root[data-theme="cat"], .theme-sw[data-preview="cat"] {
+  --bg: #221E29; --surface: #2D2835; --ink: #F5ECE2; --muted: #B8ACBA; --line: #463E52;
+  --accent: #F4A259; --on-accent: #2A1A0C;
+  --danger: #FF8E8E; --warn-bg: #40301A; --warn-ink: #FFD9A0;
+  --p0: #FF8F7A; --p1: #74B6FF; --p2: #BBA4FF; --p3: #7FD48A;
+  --p4: #FF8FB5; --p5: #56D3DC; --p6: #F7CE46; --p7: #D8C2A8;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: ui-rounded, Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 18px;
+  color-scheme: dark;
+}
+:root[data-theme="cat"] {
+  --la-ears: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%23F4A259'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%23C9703A'/%3E%3C/g%3E%3C/svg%3E") 12px 0 / 18px 10px no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg transform='translate(16 0) scale(-1 1)'%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%23F4A259'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%23C9703A'/%3E%3C/g%3E%3C/svg%3E") 36px 0 / 18px 10px no-repeat;
+  --la-cat: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='20' viewBox='0 0 46 20'%3E%3Cg fill='%23F3E3CC'%3E%3Cpath d='M17 15C17 8.500 22 5 29 5C37 5 43.500 8.500 43.500 13C43.500 14 43.300 14.600 43 15Z'/%3E%3Cpath d='M6 6.600L5.200 .7L10.300 3.700Z'/%3E%3Cpath d='M12.700 3.700L17.800 .7L17 6.600Z'/%3E%3Ccircle cx='11.500' cy='9' r='6.300'/%3E%3Crect x='12.300' y='12' width='4.200' height='7.600' rx='2.100'/%3E%3Crect x='18.300' y='12' width='4.200' height='7.600' rx='2.100'/%3E%3C/g%3E%3Cpath d='M26.500 5.300c4-.7 9 .2 12.300 2.300c-3.200 1.700-8.800 1.300-12.300-2.300z' fill='%23F4A259'/%3E%3Cpath d='M6.300 5.400L6 2.200L8.700 3.800ZM16.700 5.400L17 2.200L14.300 3.800Z' fill='%23E58C86'/%3E%3Cpath d='M7.700 9.200q1.300 1.300 2.600 0M12.700 9.200q1.300 1.300 2.600 0' fill='none' stroke='%233A2A33' stroke-width='.9' stroke-linecap='round'/%3E%3Cpath d='M10.700 11.300h1.600l-.8 .9z' fill='%23E58C86'/%3E%3Cpath d='M14.400 16.500v2M20.400 16.500v2' fill='none' stroke='%233A2A33' stroke-opacity='.35' stroke-width='.7' stroke-linecap='round'/%3E%3C/svg%3E");
+  --la-tail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='22' viewBox='0 0 10 22'%3E%3Cpath d='M5.500 2C5.500 9 2.300 12.500 4 19.500' fill='none' stroke='%23F3E3CC' stroke-width='3.600' stroke-linecap='round'/%3E%3Cpath d='M3.300 15.500C3.200 17 3.500 18.300 4 19.500' fill='none' stroke='%23F4A259' stroke-width='3.600' stroke-linecap='round'/%3E%3C/svg%3E");
+  --la-paw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23F5ECE2'%3E%3Cellipse cx='10' cy='13.500' rx='5' ry='4.200'/%3E%3Cellipse cx='4.200' cy='8.200' rx='2' ry='2.600' transform='rotate(-25 4.2 8.2)'/%3E%3Cellipse cx='8' cy='4.800' rx='2' ry='2.700' transform='rotate(-8 8 4.8)'/%3E%3Cellipse cx='12' cy='4.800' rx='2' ry='2.700' transform='rotate(8 12 4.8)'/%3E%3Cellipse cx='15.800' cy='8.200' rx='2' ry='2.600' transform='rotate(25 15.8 8.2)'/%3E%3C/g%3E%3C/svg%3E");
+}
+.theme-sw[data-preview="cat"]::after {
+  content: ""; position: absolute; top: 2px; right: 5px; width: 13px; height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='14' viewBox='0 0 16 14'%3E%3Cg fill='%23F3E3CC'%3E%3Cpath d='M2.300 6.500L1.800 1L6.300 3.700Z'/%3E%3Cpath d='M9.700 3.700L14.200 1L13.700 6.500Z'/%3E%3Cellipse cx='8' cy='8.600' rx='6.200' ry='5'/%3E%3C/g%3E%3Ccircle cx='5.700' cy='8.300' r='.9' fill='%233A2A33'/%3E%3Ccircle cx='10.300' cy='8.300' r='.9' fill='%233A2A33'/%3E%3Cpath d='M7.300 10.200h1.400l-.7 .8z' fill='%23E58C86'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Dusk: window light from the top right, a paw print here and there. */
+:root[data-theme="cat"] main {
+  background:
+    radial-gradient(120% 45% at 85% 0%, rgba(244,162,89, 0.08), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='%23F5ECE2' fill-opacity='0.045'%3E%3Cg transform='translate(24 30) rotate(28) scale(.8)'%3E%3Cellipse cx='10' cy='13.500' rx='5' ry='4.200'/%3E%3Cellipse cx='4.200' cy='8.200' rx='2' ry='2.600' transform='rotate(-25 4.2 8.2)'/%3E%3Cellipse cx='8' cy='4.800' rx='2' ry='2.700' transform='rotate(-8 8 4.8)'/%3E%3Cellipse cx='12' cy='4.800' rx='2' ry='2.700' transform='rotate(8 12 4.8)'/%3E%3Cellipse cx='15.800' cy='8.200' rx='2' ry='2.600' transform='rotate(25 15.8 8.2)'/%3E%3C/g%3E%3Cg transform='translate(96 104) rotate(-22) scale(.8)'%3E%3Cellipse cx='10' cy='13.500' rx='5' ry='4.200'/%3E%3Cellipse cx='4.200' cy='8.200' rx='2' ry='2.600' transform='rotate(-25 4.2 8.2)'/%3E%3Cellipse cx='8' cy='4.800' rx='2' ry='2.700' transform='rotate(-8 8 4.8)'/%3E%3Cellipse cx='12' cy='4.800' rx='2' ry='2.700' transform='rotate(8 12 4.8)'/%3E%3Cellipse cx='15.800' cy='8.200' rx='2' ry='2.600' transform='rotate(25 15.8 8.2)'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") 0 0 / 150px 150px;
+}
+
+/* Soft header and tab bar. The settings button has ears. */
+:root[data-theme="cat"] .app-head { border-radius: 0 0 22px 22px; }
+:root[data-theme="cat"] .tabs { border-radius: 22px 22px 0 0; }
+:root[data-theme="cat"] .icon-btn { position: relative; background: #4D3C3B; }
+:root[data-theme="cat"] .icon-btn::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -5px; height: 9px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%234D3C3B'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%237D5943'/%3E%3C/g%3E%3C/svg%3E") 4px 0 / 16px 9px no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg transform='translate(16 0) scale(-1 1)'%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%234D3C3B'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%237D5943'/%3E%3C/g%3E%3C/svg%3E") calc(100% - 4px) 0 / 16px 9px no-repeat;
+}
+:root[data-theme="cat"] .site-link { border-color: transparent; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+
+/* The cat looks over the tab bar above the tab you are on. */
+:root[data-theme="cat"] .tabs button[aria-selected="true"]::before {
+  top: -12px; left: 50%; right: auto; width: 36px; height: 13px; margin-left: -18px; border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='13' viewBox='0 0 36 13'%3E%3Cpath d='M4 13c0-3 1-5.500 2.500-7.200L6.200 .8l5.400 3.300c2-.9 4.200-1.300 6.400-1.300s4.400 .4 6.400 1.300L29.800 .8l-.3 5c1.500 1.700 2.500 4.200 2.500 7.200z' fill='%23F4A259'/%3E%3Cpath d='M7.700 3.600l2.500 1.500-2.700 1.900zM28.300 3.600l-2.500 1.500 2.700 1.900z' fill='%23C9703A'/%3E%3Ccircle cx='13' cy='10' r='1.5' fill='%232A1A0C'/%3E%3Ccircle cx='23' cy='10' r='1.5' fill='%232A1A0C'/%3E%3Ccircle cx='13.5' cy='9.5' r='.5' fill='%23FFFFFF'/%3E%3Ccircle cx='23.5' cy='9.5' r='.5' fill='%23FFFFFF'/%3E%3C/svg%3E") center / contain no-repeat; transform-origin: 50% 100%;
+}
+
+/* Primary buttons are long cats: ears at the head end, a tail at the other. The selected day has ears too. */
+:root[data-theme="cat"] .btn.primary, :root[data-theme="cat"] .chip { position: relative; }
+:root[data-theme="cat"] .btn.primary::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -9px; height: 10px; background: var(--la-ears); pointer-events: none;
+}
+:root[data-theme="cat"] .btn.primary::after {
+  content: ""; position: absolute; right: 16px; top: -12px; width: 13px; height: 13px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 16C4 8.500 12 10 12 3.200' fill='none' stroke='%23F4A259' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M12 5.200L12 3.200' fill='none' stroke='%23C9703A' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; transform-origin: 25% 100%; pointer-events: none;
+}
+:root[data-theme="cat"] .chip[aria-pressed="true"]::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -7px; height: 8px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%23F5ECE2'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%23E8A7A0'/%3E%3C/g%3E%3C/svg%3E") 9px 0 / 14px 8px no-repeat, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9' viewBox='0 0 16 9'%3E%3Cg transform='translate(16 0) scale(-1 1)'%3E%3Cpath d='M.5 9L5 1.2Q5.9 .1 7 1.1L15.5 9Z' fill='%23F5ECE2'/%3E%3Cpath d='M4.2 9L5.9 4.2L10.4 9Z' fill='%23E8A7A0'/%3E%3C/g%3E%3C/svg%3E") calc(100% - 9px) 0 / 14px 8px no-repeat;
+}
+
+/* A cat lies on the "now / next" card, front paws over the edge, tail hanging down. */
+:root[data-theme="cat"] .status, :root[data-theme="cat"] .empty-card { position: relative; }
+:root[data-theme="cat"] .status::before, :root[data-theme="cat"] .empty-card::before {
+  content: ""; position: absolute; top: -17px; right: 24px; width: 55px; height: 24px;
+  background: var(--la-cat) center / contain no-repeat; pointer-events: none;
+}
+:root[data-theme="cat"] .status::after, :root[data-theme="cat"] .empty-card::after {
+  content: ""; position: absolute; top: -6px; right: 21px; width: 12px; height: 26px;
+  background: var(--la-tail) center / contain no-repeat; transform-origin: 55% 2px; pointer-events: none;
+}
+/* A paw print in the corner of every class, in the course colour. */
+:root[data-theme="cat"] .card { position: relative; isolation: isolate; }
+:root[data-theme="cat"] .card::after {
+  content: ""; position: absolute; right: 10px; bottom: 8px; width: 22px; height: 22px; z-index: -1;
+  background: var(--c); opacity: .3; transform: rotate(18deg); pointer-events: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cellipse cx='10' cy='13.500' rx='5' ry='4.200'/%3E%3Cellipse cx='4.200' cy='8.200' rx='2' ry='2.600' transform='rotate(-25 4.2 8.2)'/%3E%3Cellipse cx='8' cy='4.800' rx='2' ry='2.700' transform='rotate(-8 8 4.8)'/%3E%3Cellipse cx='12' cy='4.800' rx='2' ry='2.700' transform='rotate(8 12 4.8)'/%3E%3Cellipse cx='15.800' cy='8.200' rx='2' ry='2.600' transform='rotate(25 15.8 8.2)'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cellipse cx='10' cy='13.500' rx='5' ry='4.200'/%3E%3Cellipse cx='4.200' cy='8.200' rx='2' ry='2.600' transform='rotate(-25 4.2 8.2)'/%3E%3Cellipse cx='8' cy='4.800' rx='2' ry='2.700' transform='rotate(-8 8 4.8)'/%3E%3Cellipse cx='12' cy='4.800' rx='2' ry='2.700' transform='rotate(8 12 4.8)'/%3E%3Cellipse cx='15.800' cy='8.200' rx='2' ry='2.600' transform='rotate(25 15.8 8.2)'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:root[data-theme="cat"] .sw { border-radius: 50%; }
+:root[data-theme="cat"] .blk { border-radius: 9px; }
+:root[data-theme="cat"] .sheet { border-radius: 28px 28px 0 0; }
+
+/* Paw prints: two trails of prints that come up one after the other and fade. */
+:root[data-theme="cat"] .fx { display: block; }
+:root[data-theme="cat"] .fx i { width: 18px; height: 18px; opacity: 0; background: var(--la-paw) center / contain no-repeat; animation: la-paw 18s linear infinite; }
+:root[data-theme="cat"] .fx i:nth-child(1) { left: 8vw; top: 76vh; transform: rotate(32deg) translateX(-9px); animation-delay: 0s; }
+:root[data-theme="cat"] .fx i:nth-child(2) { left: 19.33vw; top: 68.33vh; transform: rotate(32deg) translateX(9px); animation-delay: 0.5s; }
+:root[data-theme="cat"] .fx i:nth-child(3) { left: 30.67vw; top: 60.67vh; transform: rotate(32deg) translateX(-9px); animation-delay: 1s; }
+:root[data-theme="cat"] .fx i:nth-child(4) { left: 42vw; top: 53vh; transform: rotate(32deg) translateX(9px); animation-delay: 1.5s; }
+:root[data-theme="cat"] .fx i:nth-child(5) { left: 53.33vw; top: 45.33vh; transform: rotate(32deg) translateX(-9px); animation-delay: 2s; }
+:root[data-theme="cat"] .fx i:nth-child(6) { left: 64.67vw; top: 37.67vh; transform: rotate(32deg) translateX(9px); animation-delay: 2.5s; }
+:root[data-theme="cat"] .fx i:nth-child(7) { left: 76vw; top: 30vh; transform: rotate(32deg) translateX(-9px); animation-delay: 3s; }
+:root[data-theme="cat"] .fx i:nth-child(8) { left: 86vw; top: 60vh; transform: rotate(-128deg) translateX(-9px); animation-delay: 9s; }
+:root[data-theme="cat"] .fx i:nth-child(9) { left: 73vw; top: 66vh; transform: rotate(-128deg) translateX(9px); animation-delay: 9.5s; }
+:root[data-theme="cat"] .fx i:nth-child(10) { left: 60vw; top: 72vh; transform: rotate(-128deg) translateX(-9px); animation-delay: 10s; }
+:root[data-theme="cat"] .fx i:nth-child(11) { left: 47vw; top: 78vh; transform: rotate(-128deg) translateX(9px); animation-delay: 10.5s; }
+:root[data-theme="cat"] .fx i:nth-child(12) { left: 34vw; top: 84vh; transform: rotate(-128deg) translateX(-9px); animation-delay: 11s; }
+@keyframes la-paw { 0% { opacity: 0; } 1.5%, 16% { opacity: .34; } 27%, 100% { opacity: 0; } }
+/* The tail sways; the tab cat comes up when you change tab. */
+:root[data-theme="cat"]:not([data-fx="off"]) .status::after, :root[data-theme="cat"]:not([data-fx="off"]) .empty-card::after, :root[data-theme="cat"]:not([data-fx="off"]) .btn.primary::after { animation: la-tail 2.6s cubic-bezier(.37, 0, .63, 1) infinite alternate; }
+:root[data-theme="cat"]:not([data-fx="off"]) .btn.primary::after { animation-duration: 3.4s; }
+@keyframes la-tail { from { transform: rotate(-9deg); } to { transform: rotate(11deg); } }
+:root[data-theme="cat"]:not([data-fx="off"]) .tabs button[aria-selected="true"]::before { animation: la-peek .18s cubic-bezier(.23, 1, .32, 1); }
+@keyframes la-peek { from { transform: scaleY(.35); opacity: 0; } }
+
+/* Reduced motion: the app already hides .fx; this stops the animations outside it. */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="bee"]:not([data-fx="off"]) .status::before, :root[data-theme="bee"]:not([data-fx="off"]) .empty-card::before,
+  :root[data-theme="cat"]:not([data-fx="off"]) .status::after, :root[data-theme="cat"]:not([data-fx="off"]) .empty-card::after, :root[data-theme="cat"]:not([data-fx="off"]) .btn.primary::after,
+  :root[data-theme="cat"]:not([data-fx="off"]) .tabs button[aria-selected="true"]::before { animation: none; }
+}

@@ -14,15 +14,21 @@
 <link rel="stylesheet" href="themes/calm.css">
 <link rel="stylesheet" href="themes/fun-a.css">
 <link rel="stylesheet" href="themes/fun-b.css">
+<link rel="stylesheet" href="themes/live-a.css">
+<link rel="stylesheet" href="themes/live-b.css">
+<link rel="stylesheet" href="themes/live-c.css">
 <script>
   // Applies a theme chosen in Settings before the first paint (app.js keeps it up to date afterwards).
   try {
-    var saved = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}').theme;
+    var settings = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}'), saved = settings.theme;
     if (saved && saved !== 'system' && /^[a-z0-9]+$/.test(saved)) document.documentElement.dataset.theme = saved;
+    if (settings.effects === false) document.documentElement.dataset.fx = 'off';
   } catch (e) { /* no saved settings yet */ }
 </script>
 </head>
 <body>
+<!-- Empty pieces a living theme (themes/live-*.css) draws its moving things with: bees, snow, fish. -->
+<div class="fx" id="fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <header class="app-head">
   <div class="brand">
     <a class="club" href="https://iuseng.club" target="_blank" rel="noopener">
@@ -177,6 +183,10 @@
     <div class="field">
       <span data-i18n="theme"></span>
       <div class="theme-picker" role="radiogroup" id="themeGroup"></div>
+    </div>
+    <div class="toggle-row">
+      <label for="setEffects" data-i18n="themeEffects"></label>
+      <input type="checkbox" class="switch" id="setEffects">
     </div>
 
     <section class="set-group" aria-labelledby="notifyTitle">
