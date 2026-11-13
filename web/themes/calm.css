@@ -1,0 +1,91 @@
+/* Calm themes: ocean, matcha, sunset, espresso.
+   Each block sets every colour variable of styles.css, so nothing leaks in from the light or dark theme.
+   The same block paints the picker preview (.theme-sw[data-preview=ID]).
+   Decorations sit under :root[data-theme=ID] only. They are still backgrounds: no animation, nothing to download.
+   Ratios in the comments are WCAG contrast ratios, measured with a script on this file.
+   "course text" is the lowest and highest of the eight course colours,
+   as color-mix(c 78%, ink) on color-mix(c 16%, surface). */
+
+/* ocean: dark, deep navy sea, teal accent.
+   ink on surface 13.80, ink on bg 15.42 | muted on surface 6.63, muted on bg 7.41
+   on-accent on accent 8.93 | accent as text on surface 8.52, on bg 9.52 | danger on surface 7.42
+   warn-ink on warn-bg 10.68 | course text 6.09 (p1) to 7.80 (p6) | muted on a course card 4.84 or more
+   muted on the lightest point of the backdrop 6.17 */
+:root[data-theme="ocean"], .theme-sw[data-preview="ocean"] {
+  --bg: #071722; --surface: #0D2231; --ink: #E3EEF4; --muted: #8FA9BA; --line: #1F3D52;
+  --accent: #3FD0C0; --on-accent: #04201F;
+  --danger: #FF8F8F; --warn-bg: #33290F; --warn-ink: #FFD99A;
+  --p0: #FF8A65; --p1: #62B0FF; --p2: #B39DFF; --p3: #62D182;
+  --p4: #FF7FA8; --p5: #45D4E8; --p6: #FFCB45; --p7: #D8A873;
+  --radius: 12px;
+  color-scheme: dark;
+}
+/* Light falling into the water from above, darker towards the bottom. */
+:root[data-theme="ocean"] main {
+  background:
+    radial-gradient(130% 55% at 50% 0%, rgba(63, 208, 192, .10), transparent 70%),
+    linear-gradient(to bottom, #071722 35%, #030D15);
+}
+
+/* matcha: light, green tea paper, green accent.
+   ink on surface 14.38, ink on bg 13.08 | muted on surface 6.71, muted on bg 6.11
+   on-accent on accent 6.22 | accent as text on surface 5.97, on bg 5.43 | danger on surface 6.27
+   warn-ink on warn-bg 6.81 | course text 4.94 (p6) to 6.66 (p7) | muted on a course card 5.44 or more
+   muted on a paper speck 5.00 */
+:root[data-theme="matcha"], .theme-sw[data-preview="matcha"] {
+  --bg: #EEF1E4; --surface: #FAFBF3; --ink: #1D2A1E; --muted: #505D49; --line: #D3DBC3;
+  --accent: #2F6E24; --on-accent: #FFFFFF;
+  --danger: #B3261E; --warn-bg: #F6ECC6; --warn-ink: #6B4A00;
+  --p0: #C2410C; --p1: #1D6FB8; --p2: #6D4BC4; --p3: #2E7D32;
+  --p4: #B8336A; --p5: #0C7480; --p6: #8F6B00; --p7: #744B3A;
+  --radius: 14px;
+  color-scheme: light;
+}
+/* Paper fibres: two grids of faint specks that do not line up. */
+:root[data-theme="matcha"] main {
+  background:
+    radial-gradient(rgba(29, 42, 30, .06) 1px, transparent 1.4px) 0 0 / 17px 17px,
+    radial-gradient(rgba(47, 110, 36, .07) 1px, transparent 1.4px) 6px 9px / 23px 23px;
+}
+
+/* sunset: light, warm peach and cream, burnt-orange accent.
+   ink on surface 15.96, ink on bg 14.64 | muted on surface 6.60, muted on bg 6.05
+   on-accent on accent 5.82 | accent as text on surface 5.57, on bg 5.11 | danger on surface 7.15
+   warn-ink on warn-bg 7.14 | course text 5.11 (p6) to 6.79 (p7) | muted on a course card 5.33 or more
+   muted on the darkest point of the backdrop 4.84 */
+:root[data-theme="sunset"], .theme-sw[data-preview="sunset"] {
+  --bg: #FBEEE2; --surface: #FFF9F3; --ink: #2B1A12; --muted: #705446; --line: #EDD5C2;
+  --accent: #B23F09; --on-accent: #FFFFFF;
+  --danger: #A8123A; --warn-bg: #FFE9B8; --warn-ink: #6E4300;
+  --p0: #C2380F; --p1: #1F6FB5; --p2: #6A4BC0; --p3: #2F7D3B;
+  --p4: #B52E63; --p5: #0B7482; --p6: #8F6900; --p7: #744B3A;
+  --radius: 14px;
+  color-scheme: light;
+}
+/* Evening sky: cream at the top, apricot at the horizon, a low sun behind the last cards. */
+:root[data-theme="sunset"] main {
+  background:
+    radial-gradient(90% 34% at 50% 100%, rgba(232, 120, 48, .16), transparent 72%),
+    linear-gradient(to bottom, #FBEEE2 30%, #F9E2D0);
+}
+
+/* espresso: dark, roasted brown, caramel accent.
+   ink on surface 13.47, ink on bg 14.86 | muted on surface 6.52, muted on bg 7.20
+   on-accent on accent 8.25 | accent as text on surface 7.59, on bg 8.37 | danger on surface 7.24
+   warn-ink on warn-bg 9.99 | course text 6.00 (p4) to 7.42 (p6) | muted on a course card 4.72 or more
+   muted on the lightest point of the backdrop 6.21 */
+:root[data-theme="espresso"], .theme-sw[data-preview="espresso"] {
+  --bg: #1C130E; --surface: #281C15; --ink: #F1E6DA; --muted: #B39F8E; --line: #443226;
+  --accent: #E0A458; --on-accent: #20140A;
+  --danger: #FF8A7A; --warn-bg: #3D2C10; --warn-ink: #FFD99A;
+  --p0: #FF8B5E; --p1: #6FB2F2; --p2: #B7A0F5; --p3: #7CCB7A;
+  --p4: #F486A6; --p5: #4FCFCF; --p6: #F5C542; --p7: #D9C3A5;
+  --radius: 8px;
+  color-scheme: dark;
+}
+/* Lamp light over the cup, darker roast towards the bottom. */
+:root[data-theme="espresso"] main {
+  background:
+    radial-gradient(120% 50% at 15% 0%, rgba(224, 164, 88, .09), transparent 70%),
+    linear-gradient(to bottom, #1C130E 35%, #130C08);
+}

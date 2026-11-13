@@ -21,7 +21,13 @@
   };
 
   const DEFAULT_SETTINGS = { theme: 'system', before: false, lead: 15, evening: false, eveningTime: '20:00' };
-  const THEMES = ['system', 'light', 'dark'];
+  // Settings shows the themes in these groups. Light and dark are in styles.css, the rest in themes/*.css.
+  const THEME_GROUPS = [
+    ['themeBasic', ['system', 'light', 'dark']],
+    ['themeCalm', ['ocean', 'matcha', 'sunset', 'espresso']],
+    ['themeFun', ['cevapi', 'coffee3am', 'panic', 'terminal', 'blueprint', 'chalkboard', 'oldpc', 'comic']]
+  ];
+  const THEMES = THEME_GROUPS.flatMap(g => g[1]);
   const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
   const LEAD_CHOICES = [5, 10, 15, 30, 60];
 
@@ -1069,24 +1075,42 @@
     try { window.AndroidNotify.schedule(JSON.stringify(reminderList())); } catch (e) { /* older app without reminders */ }
   }
 
-  // "system" follows the phone; "light" and "dark" override it. The Android app also recolours its status bar.
+  // "system" follows the phone; every other theme sets data-theme on <html>. The Android app also recolours its bars.
   function applyTheme() {
-    const theme = state.settings.theme, root = document.documentElement;
-    if (theme === 'light' || theme === 'dark') root.dataset.theme = theme; else delete root.dataset.theme;
-    const dark = theme === 'dark' || (theme !== 'light' && darkQuery.matches);
-    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = dark ? '#151E29' : '#FFFFFF'; });
+    const theme = THEMES.includes(state.settings.theme) ? state.settings.theme : 'system', root = document.documentElement;
+    if (theme === 'system') delete root.dataset.theme; else root.dataset.theme = theme;
+    const style = getComputedStyle(root), surface = style.getPropertyValue('--surface').trim();
+    const dark = style.colorScheme === 'dark';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = surface || (dark ? '#151E29' : '#FFFFFF'); });
     if (window.AndroidUi) {
-      try { window.AndroidUi.setTheme(theme); } catch (e) { /* older app: the page still switches */ }
+      // The app only knows system, light and dark, so the other themes tell it which of the two they are closest to.
+      try { window.AndroidUi.setTheme(theme === 'system' ? 'system' : dark ? 'dark' : 'light'); } catch (e) { /* older app: the page still switches */ }
     }
+  }
+
+  // A small picture of the app, coloured by the theme named in data-preview.
+  const themeMock = (id, half) => `<span class="theme-sw${half ? ' half' : ''}" data-preview="${id}">
+      <span class="sw-head"><i></i><b>Aa</b></span>
+      <span class="sw-body">
+        <span class="sw-card" style="--c:var(--p0)"><b>CS103</b><s></s></span>
+        <span class="sw-card" style="--c:var(--p1)"><b>MATH</b><s></s></span>
+        <span class="sw-dots">${[2, 3, 4, 5, 6, 7].map(n => `<i style="--c:var(--p${n})"></i>`).join('')}</span>
+      </span>
+    </span>`;
+
+  function renderThemePicker() {
+    const t = T(), current = THEMES.includes(state.settings.theme) ? state.settings.theme : 'system';
+    $('themeGroup').innerHTML = THEME_GROUPS.map(([label, ids]) => `<p class="theme-group">${esc(t[label])}</p>
+      <div class="theme-row">${ids.map(id => `<button type="button" class="theme-opt" role="radio" data-theme-choice="${id}" aria-checked="${id === current}">
+        <span class="theme-frame">${id === 'system' ? themeMock('light', true) + themeMock('dark', true) : themeMock(id)}</span>
+        <span class="theme-name">${esc(t.themes[id])}</span>
+      </button>`).join('')}</div>`).join('');
   }
 
   function renderSettings() {
     const t = T(), s = state.settings;
     const native = !!window.AndroidNotify, oldApp = !native && !!window.AndroidStore;
-    document.querySelectorAll('[data-theme-choice]').forEach(b => {
-      b.textContent = t.themes[b.dataset.themeChoice];
-      b.setAttribute('aria-pressed', String(b.dataset.themeChoice === s.theme));
-    });
+    renderThemePicker();
     $('themeGroup').setAttribute('aria-label', t.theme);
     $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
     $('setBefore').checked = s.before;
@@ -1160,7 +1184,8 @@
       state.settings.theme = d.themeChoice;
       store.set('settings', JSON.stringify(state.settings));
       applyTheme();
-      return renderSettings();
+      document.querySelectorAll('[data-theme-choice]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.themeChoice === d.themeChoice)));
+      return;
     }
     if (d.lang) return setLang(d.lang);
     if (d.tab) return setTab(d.tab);

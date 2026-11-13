@@ -7,7 +7,7 @@ This is an unofficial student project by the [IUS Engineering Club](https://iuse
 - **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
 - **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
 - Languages: English, Turkish and Bosnian (in Settings, behind the gear at the top right).
-- Theme: follows the phone, or set Light or Dark in Settings.
+- Themes: follows the phone, or pick one in Settings: Light, Dark, four calm ones (Ocean, Matcha, Sunset, Espresso) and eight fun ones (Ćevapi, 3 a.m., Exam panic, Terminal, Blueprint, Chalkboard, Old PC, Comic Sans). Each theme is a block of CSS variables in [`web/themes/`](web/themes).
 - Android app only: a reminder before each class and an evening summary of tomorrow's classes, each switched on in Settings.
 
 ## Install on Android

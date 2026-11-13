@@ -1,0 +1,137 @@
+/* Funny themes, set A: cevapi, coffee3am, panic, terminal.
+   Each theme is one variable block shared by the page (:root[data-theme]) and its picker card
+   (.theme-sw[data-preview]). Every block also sets --f-display, --f-body and --radius, so a card
+   never inherits them from whichever theme is active on the page.
+   Decorations sit under :root[data-theme="ID"] only and change no sizes.
+   Contrast figures are WCAG ratios, measured with a script. "course text" is the lowest of the
+   eight course colours as text: color-mix(c 78%, ink) on color-mix(c 16%, surface). */
+
+/* cevapi: somun-bread cream, grilled-brown ink, onion-red accent.
+   ink on surface 15.56, ink on bg 12.89; muted on surface 7.21, on bg 5.97;
+   on-accent on accent 6.96; accent on surface 6.96, on bg 5.77; danger on surface 6.26;
+   warn-ink on warn-bg 6.78; course text 5.05 to 5.82. */
+:root[data-theme="cevapi"], .theme-sw[data-preview="cevapi"] {
+  --bg: #F2E3C6;
+  --surface: #FFF9EC;
+  --ink: #33190E;
+  --muted: #6B4E3A;
+  --line: #DFCBA4;
+  --accent: #A3262E;
+  --on-accent: #FFF9EC;
+  --danger: #B4231A;
+  --warn-bg: #F9DC9C;
+  --warn-ink: #6A3F00;
+  --p0: #C2410C; --p1: #1F6FB5; --p2: #7B4BC4; --p3: #3C701A;
+  --p4: #B4246B; --p5: #0E7C7B; --p6: #7A7200; --p7: #8B5A2B;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 14px;
+  color-scheme: light;
+}
+/* The diamond scoring on top of a somun. */
+:root[data-theme="cevapi"] main {
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0 23px, color-mix(in srgb, var(--ink) 8%, transparent) 23px 24px),
+    repeating-linear-gradient(-45deg, transparent 0 23px, color-mix(in srgb, var(--ink) 8%, transparent) 23px 24px);
+}
+
+/* coffee3am: 3 a.m. before the exam. Near-black room, tired amber desk lamp.
+   ink on surface 14.30, ink on bg 15.44; muted on surface 6.21, on bg 6.71;
+   on-accent on accent 8.38; accent on surface 8.06, on bg 8.70; danger on surface 7.89;
+   warn-ink on warn-bg 10.20; course text 6.22 to 8.00. */
+:root[data-theme="coffee3am"], .theme-sw[data-preview="coffee3am"] {
+  --bg: #100D0A;
+  --surface: #1B1612;
+  --ink: #F0E4D2;
+  --muted: #A8957F;
+  --line: #30271F;
+  --accent: #E3A13C;
+  --on-accent: #1A1104;
+  --danger: #FF8B7B;
+  --warn-bg: #3B2A0D;
+  --warn-ink: #FFD899;
+  --p0: #F47F5B; --p1: #6DA9EA; --p2: #B59CF2; --p3: #7BC67A;
+  --p4: #F07FA6; --p5: #43C6CB; --p6: #EBC445; --p7: #C8AC90;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 10px;
+  color-scheme: dark;
+}
+/* The desk lamp: the only light in the room falls on the top of the page. */
+:root[data-theme="coffee3am"] main {
+  background-image: radial-gradient(130% 360px at 50% -60px, color-mix(in srgb, var(--accent) 17%, transparent), transparent 72%);
+  background-repeat: no-repeat;
+}
+
+/* panic: a marked exam sheet. Paper white, red pen, highlighter yellow.
+   ink on surface 17.23, ink on bg 16.34; muted on surface 6.66, on bg 6.32;
+   on-accent on accent 5.85; accent on surface 5.85, on bg 5.55; danger on surface 6.92;
+   warn-ink on warn-bg 7.89; ink on the highlighter 14.96; course text 5.10 to 6.30. */
+:root[data-theme="panic"], .theme-sw[data-preview="panic"] {
+  --bg: #FAF9F4;
+  --surface: #FFFFFF;
+  --ink: #151A2E;
+  --muted: #555C70;
+  --line: #D3DBE8;
+  --accent: #C7191F;
+  --on-accent: #FFFFFF;
+  --danger: #B3141B;
+  --warn-bg: #FFF27A;
+  --warn-ink: #5A4600;
+  --p0: #CB4B0A; --p1: #1A5FD0; --p2: #6F45E0; --p3: #1A701A;
+  --p4: #BF2468; --p5: #087482; --p6: #767A00; --p7: #8A572A;
+  --f-display: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 6px;
+  color-scheme: light;
+}
+/* Ruled exam paper with a red margin line. It scrolls with the page. */
+:root[data-theme="panic"] main {
+  background-image:
+    linear-gradient(90deg, transparent 7px, color-mix(in srgb, var(--accent) 50%, transparent) 7px 8px, transparent 8px),
+    repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in srgb, #4F7FD0 20%, transparent) 27px 28px);
+  background-attachment: local;
+}
+/* The title got the highlighter. The margin and padding cancel out, so nothing moves. */
+:root[data-theme="panic"] .app-head h1 {
+  width: fit-content; max-width: calc(100% + 6px);
+  margin-inline: -3px; padding-inline: 3px;
+  background: linear-gradient(to bottom, transparent 50%, var(--warn-bg) 50% 94%, transparent 94%);
+}
+
+/* terminal: green-phosphor screen, monospace headings, the eight course colours as ANSI brights.
+   ink on surface 15.18, ink on bg 16.05; muted on surface 7.33, on bg 7.75;
+   on-accent on accent 14.23; accent on surface 14.18, on bg 14.99; danger on surface 7.16;
+   warn-ink on warn-bg 10.95; course text 6.66 to 9.33. */
+:root[data-theme="terminal"], .theme-sw[data-preview="terminal"] {
+  --bg: #040A05;
+  --surface: #0A130B;
+  --ink: #B8F5C0;
+  --muted: #6DB07A;
+  --line: #1A3A21;
+  --accent: #3DFF74;
+  --on-accent: #02140A;
+  --danger: #FF7468;
+  --warn-bg: #2B2606;
+  --warn-ink: #FFD75E;
+  --p0: #FF7B5C; --p1: #5FB4FF; --p2: #B79DFF; --p3: #A6E22E;
+  --p4: #FF7EB6; --p5: #33E0D2; --p6: #FFD23F; --p7: #D8B48A;
+  --f-display: ui-monospace, "Cascadia Mono", Consolas, "Roboto Mono", "Droid Sans Mono", Menlo, monospace;
+  --f-body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 3px;
+  color-scheme: dark;
+}
+/* Monospace is wider than the condensed default, so the title is set smaller on the same line height. */
+:root[data-theme="terminal"] .app-head h1 { font-size: 17px; line-height: 23px; letter-spacing: 0; }
+/* Seven-character codes (MATH101) have to fit a Week column at phone width. */
+:root[data-theme="terminal"] .blk .code { letter-spacing: -.04em; }
+/* The block cursor after the title. */
+:root[data-theme="terminal"] .app-head h1::after {
+  content: ""; display: inline-block; width: .55em; height: 1em; margin-left: .25em; vertical-align: -.12em;
+  background: var(--accent);
+  animation: fun-a-cursor 1.1s steps(1, end) infinite;
+}
+@keyframes fun-a-cursor { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="terminal"] .app-head h1::after { animation: none; }
+}

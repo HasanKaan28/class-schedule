@@ -1,0 +1,157 @@
+/* Playful themes, set B: blueprint, chalkboard, oldpc, comic.
+   Each theme block sets every colour variable, so it also paints the picker's preview card
+   (.theme-sw[data-preview=ID]). The jokes (grid, chalk dust, bevels, sticky notes) live only
+   under :root[data-theme=ID] selectors, use system fonts only and never move the layout.
+   This file must load after styles.css: its theme blocks have the same specificity as the
+   dark-mode block there, so source order decides. */
+
+/* Blueprint: an engineering drawing. Deep blue paper, pale-cyan ink, a faint drawing grid.
+   Measured: ink 12.1 on surface, 14.2 on bg; muted 7.7 / 9.0; on-accent on accent 10.8;
+   accent on surface 9.2; danger 6.7; warn 9.1; course text on its tag 5.4 to 6.8 (min p2, p4). */
+:root[data-theme="blueprint"], .theme-sw[data-preview="blueprint"] {
+  --bg: #0B2549;
+  --surface: #113060;
+  --ink: #EEF8FF;
+  --muted: #A9CBEA;
+  --line: #335E96;
+  --accent: #8EE6F7;
+  --on-accent: #0B2549;
+  --danger: #FFA294;
+  --warn-bg: #3A3A1E;
+  --warn-ink: #FFE28A;
+  --p0: #FFA366; --p1: #8FCBFF; --p2: #BBA9FF; --p3: #7FE08F;
+  --p4: #FF8FB6; --p5: #4FE3D1; --p6: #FFD54D; --p7: #E5B482;
+  --f-display: ui-monospace, "Cascadia Mono", Consolas, Menlo, "Droid Sans Mono", monospace;
+  --radius: 3px;
+  color-scheme: dark;
+}
+/* The drawing grid: fine lines every 18px, heavier ones every 90px, scrolling with the page. */
+:root[data-theme="blueprint"] main {
+  background-image:
+    linear-gradient(rgba(142, 230, 247, .11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(142, 230, 247, .11) 1px, transparent 1px),
+    linear-gradient(rgba(142, 230, 247, .05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(142, 230, 247, .05) 1px, transparent 1px);
+  background-size: 90px 90px, 90px 90px, 18px 18px, 18px 18px;
+  background-position: -1px -1px;
+  background-attachment: local;
+}
+/* The app title keeps the condensed face: a monospace title does not fit beside the header buttons. */
+:root[data-theme="blueprint"] .app-head h1 { font-family: "sans-serif-condensed", "Roboto Condensed", "Arial Narrow", sans-serif; }
+
+/* Chalkboard: green school board, chalk-white writing, yellow chalk for the accent.
+   Measured: ink 9.4 on surface, 11.2 on bg; muted 6.7 / 7.9; on-accent on accent 9.5;
+   accent on surface 8.0; danger 5.3; warn 8.4; course text on its tag 5.0 to 5.5 (min p0, p1, p2, p4). */
+:root[data-theme="chalkboard"], .theme-sw[data-preview="chalkboard"] {
+  --bg: #1C3A2E;
+  --surface: #23463A;
+  --ink: #F6F3E8;
+  --muted: #C2D3C6;
+  --line: #3F6656;
+  --accent: #F7E27A;
+  --on-accent: #1C3A2E;
+  --danger: #FFA08F;
+  --warn-bg: #4A4120;
+  --warn-ink: #FFE9A3;
+  --p0: #FFBA8C; --p1: #A0D3FF; --p2: #D0C2FF; --p3: #B0EBA4;
+  --p4: #FFB2CF; --p5: #8CEAE4; --p6: #FFDC5C; --p7: #EDC89E;
+  --radius: 8px;
+  color-scheme: dark;
+}
+/* Chalk dust: a faint grain plus two wiped smudges on the board. */
+:root[data-theme="chalkboard"] main {
+  background-image:
+    radial-gradient(ellipse 60% 22% at 25% 12%, rgba(246, 243, 232, .06), transparent 70%),
+    radial-gradient(ellipse 50% 18% at 78% 64%, rgba(246, 243, 232, .045), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)'/%3E%3C/svg%3E");
+  background-attachment: local;
+}
+/* Headings look written by hand, a little blurry like chalk. Course codes keep the normal font
+   so they still fit the Week grid. */
+:root[data-theme="chalkboard"] :is(.app-head h1, .empty-card h2, .day-title, .sheet-body h2, .quiz-head h2) {
+  font-family: "Chalkduster", "Segoe Print", "Bradley Hand", "Comic Sans MS", var(--f-display);
+  text-shadow: 0 0 1px rgba(246, 243, 232, .55);
+}
+
+/* Old PC: a grey 1990s desktop. Flat grey panels, navy highlight, square corners, raised bevels.
+   Measured: ink 13.7 on surface, 10.6 on bg; muted 7.2 / 5.6; on-accent on accent 16.0;
+   accent on surface 10.4; danger 5.5; warn 10.9; course text on its tag 4.8 to 6.8 (min p0). */
+:root[data-theme="oldpc"], .theme-sw[data-preview="oldpc"] {
+  --bg: #B8B8B8;
+  --surface: #D4D0C8;
+  --ink: #000000;
+  --muted: #3C3C3C;
+  --line: #808080;
+  --accent: #000080;
+  --on-accent: #FFFFFF;
+  --danger: #A00000;
+  --warn-bg: #FFFFE1;
+  --warn-ink: #4A3A00;
+  --p0: #A63800; --p1: #0000C0; --p2: #800080; --p3: #006400;
+  --p4: #A80056; --p5: #006666; --p6: #6E5300; --p7: #7A3E1C;
+  --f-body: Tahoma, "Segoe UI", Roboto, sans-serif;
+  --radius: 0px;
+  color-scheme: light;
+}
+/* Raised bevels: white top-left edge, dark bottom-right edge. Pressed buttons sink in. */
+:root[data-theme="oldpc"] :is(.btn, .link-btn, .chip, .site-link, .seg button[aria-pressed="true"], .sec-btn) {
+  border-radius: 0;
+  border-color: #FFFFFF #404040 #404040 #FFFFFF;
+  box-shadow: inset -1px -1px #808080, inset 1px 1px #E8E8E8;
+}
+:root[data-theme="oldpc"] :is(.btn, .link-btn, .chip, .site-link, .sec-btn):active,
+:root[data-theme="oldpc"] .chip[aria-pressed="true"] {
+  border-color: #404040 #FFFFFF #FFFFFF #404040;
+  box-shadow: inset 1px 1px #808080;
+}
+:root[data-theme="oldpc"] :is(.status, .course, .empty-card, .quiz, .quiz-soon, .week) {
+  border-color: #FFFFFF #404040 #404040 #FFFFFF;
+  box-shadow: inset -1px -1px #A0A0A0;
+}
+:root[data-theme="oldpc"] :is(.field input, .field select, textarea, .score input) {
+  border-radius: 0; background: #FFFFFF;
+  border-color: #404040 #FFFFFF #FFFFFF #404040;
+}
+:root[data-theme="oldpc"] :is(.sheet, .toast, .tag, .sw, .bar, .bar i, .blk, .seg, .suggest) { border-radius: 0; }
+:root[data-theme="oldpc"] .tabs button[aria-selected="true"]::before { border-radius: 0; }
+:root[data-theme="oldpc"] .icon-btn { border-radius: 0; }
+/* Tahoma runs wider than the default font: keep the header title and subtitle on one line. */
+:root[data-theme="oldpc"] .term { font-size: 11px; }
+:root[data-theme="oldpc"] .site-link { font-size: 12px; }
+
+/* Comic: a sticky-note yellow page, and the whole app set in Comic Sans. The font is the joke.
+   Measured: ink 16.6 on surface, 15.2 on bg; muted 8.1 / 7.4; on-accent on accent 7.1;
+   accent on surface 6.8; danger 6.3; warn 8.1; course text on its tag 5.1 to 5.8 (min p1, p6). */
+:root[data-theme="comic"], .theme-sw[data-preview="comic"] {
+  --bg: #FFF1A6;
+  --surface: #FFFBDD;
+  --ink: #1F1A0E;
+  --muted: #574C2A;
+  --line: #E2CF72;
+  --accent: #1D4FC4;
+  --on-accent: #FFFFFF;
+  --danger: #B42318;
+  --warn-bg: #FFD9A8;
+  --warn-ink: #5E3300;
+  --p0: #C2410C; --p1: #1C6ED6; --p2: #7048E8; --p3: #26803A;
+  --p4: #C2255C; --p5: #0B7285; --p6: #9A6700; --p7: #8B5A2B;
+  --f-display: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+  --f-body: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+  --radius: 4px;
+  color-scheme: light;
+}
+/* Sticky notes: panels sit slightly crooked with a soft paper shadow; the status card gets a
+   strip of tape. Transforms and shadows only, so nothing in the layout moves. */
+:root[data-theme="comic"] :is(.status, .course, .empty-card, .quiz-soon) {
+  box-shadow: 2px 3px 0 rgba(90, 70, 0, .14);
+}
+:root[data-theme="comic"] .course:nth-child(odd) { transform: rotate(-.5deg); }
+:root[data-theme="comic"] .course:nth-child(even) { transform: rotate(.4deg); }
+/* Comic Sans runs wide: keep the header subtitle on one line. */
+:root[data-theme="comic"] .term { font-size: 11px; }
+:root[data-theme="comic"] .status { position: relative; }
+:root[data-theme="comic"] .status::before {
+  content: ""; position: absolute; top: -8px; left: 50%; width: 64px; height: 16px; margin-left: -32px;
+  background: rgba(255, 255, 255, .55); border: 1px solid rgba(90, 70, 0, .12);
+  transform: rotate(-3deg); pointer-events: none;
+}

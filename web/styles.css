@@ -1,8 +1,9 @@
 /* Layout: phone-first app shell. Header and tab bar stay put, the middle scrolls.
    Each course gets one of eight colours in the order it first appears in the week.
    Fonts are system fonts (Roboto and Roboto Condensed on Android), so nothing has to download.
-   Theme: follows the phone unless Settings sets data-theme="light" or "dark" on <html>. */
-:root {
+   Theme: follows the phone unless Settings sets data-theme on <html>. Light and dark live here; the other
+   themes are in themes/*.css. Every theme also styles .theme-sw[data-preview], the small preview in Settings. */
+:root, .theme-sw[data-preview="light"] {
   --bg: #F3F5F8;
   --surface: #FFFFFF;
   --ink: #15202D;
@@ -31,7 +32,7 @@
   }
 }
 /* Same dark values, so an explicit choice wins over the phone's setting in both directions. */
-:root[data-theme="dark"] {
+:root[data-theme="dark"], .theme-sw[data-preview="dark"] {
   --bg: #0E141C; --surface: #151E29; --ink: #E5EAF1; --muted: #94A2B4; --line: #253142; --accent: #79AEFF; --on-accent: #0E141C;
   --danger: #FF8787; --warn-bg: #3A2C12; --warn-ink: #FFD8A8;
   --p0: #FF8A4C; --p1: #5AAAF2; --p2: #A994FB; --p3: #5DC876;
@@ -273,6 +274,36 @@ main { flex: 1; overflow-y: auto; padding: 16px 16px 28px; overscroll-behavior: 
 .seg { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
 .seg button { flex: 1; min-width: 0; min-height: 40px; padding: 0 4px; border: 0; border-radius: 7px; background: transparent; font-size: 13.5px; font-weight: 600; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+
+/* Theme picker: each option is a small preview of the app drawn with that theme's own colours. */
+.theme-picker { display: grid; gap: 10px; }
+.theme-group { margin: 4px 0 -4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.theme-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.theme-opt {
+  display: grid; gap: 5px; min-width: 0; padding: 4px 4px 6px; border: 2px solid transparent; border-radius: 12px;
+  background: transparent; font-size: 12.5px; font-weight: 600; color: var(--muted); text-align: center;
+}
+.theme-opt[aria-checked="true"] { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.theme-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.theme-frame { position: relative; display: block; height: 62px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.theme-opt[aria-checked="true"] .theme-frame::after {
+  content: ""; position: absolute; right: 5px; bottom: 5px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.3l2.5 2.5 5-5.4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.theme-sw { position: absolute; inset: 0; display: grid; grid-template-rows: 15px 1fr; background: var(--bg); color: var(--ink); text-align: left; }
+.theme-sw .sw-head { display: flex; align-items: center; gap: 4px; padding: 0 6px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.theme-sw .sw-head i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.theme-sw .sw-head b { font: 700 8px/1 var(--f-display); letter-spacing: .02em; }
+.theme-sw .sw-body { display: grid; align-content: center; gap: 3px; padding: 0 6px; }
+.theme-sw .sw-card { display: flex; align-items: center; gap: 4px; height: 13px; padding: 0 5px; border-radius: min(var(--radius), 4px); background: color-mix(in srgb, var(--c) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); }
+.theme-sw .sw-card b { font: 700 7.5px/1 var(--f-display); color: color-mix(in srgb, var(--c) 78%, var(--ink)); }
+.theme-sw .sw-card s { flex: 1; height: 2px; border-radius: 1px; background: var(--muted); opacity: .45; }
+.theme-sw .sw-dots { display: flex; gap: 3px; padding-left: 1px; }
+.theme-sw .sw-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+/* System: light on the left, dark on the right. */
+.theme-sw.half { clip-path: polygon(0 0, 62% 0, 38% 100%, 0 100%); }
+.theme-sw.half + .theme-sw.half { clip-path: polygon(62% 0, 100% 0, 100% 100%, 38% 100%); }
 .warn, .error { margin: 0; padding: 10px 12px; border-radius: 8px; font-size: 13.5px; }
 .warn { background: var(--warn-bg); color: var(--warn-ink); }
 .error { background: color-mix(in srgb, var(--danger) 12%, var(--surface)); color: var(--danger); }

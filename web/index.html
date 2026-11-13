@@ -11,11 +11,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="themes/calm.css">
+<link rel="stylesheet" href="themes/fun-a.css">
+<link rel="stylesheet" href="themes/fun-b.css">
 <script>
   // Applies a theme chosen in Settings before the first paint (app.js keeps it up to date afterwards).
   try {
     var saved = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}').theme;
-    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+    if (saved && saved !== 'system' && /^[a-z0-9]+$/.test(saved)) document.documentElement.dataset.theme = saved;
   } catch (e) { /* no saved settings yet */ }
 </script>
 </head>
@@ -173,11 +176,7 @@
 
     <div class="field">
       <span data-i18n="theme"></span>
-      <div class="seg" role="group" id="themeGroup">
-        <button type="button" data-theme-choice="system"></button>
-        <button type="button" data-theme-choice="light"></button>
-        <button type="button" data-theme-choice="dark"></button>
-      </div>
+      <div class="theme-picker" role="radiogroup" id="themeGroup"></div>
     </div>
 
     <section class="set-group" aria-labelledby="notifyTitle">
