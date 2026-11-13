@@ -351,7 +351,9 @@ def collect(args, previous, term):
     # With a term schedule only this term's courses are kept; otherwise everything eCampus lists.
     codes = list(term_courses) or list(rows_by_code) or list(old_courses)
     if term_courses:
-        codes += [c for c in exam_courses if c not in term_courses]
+        # ENS207-3 and ENS207-6 already cover the midterm row ENS207.
+        term_bases = {re.match(r"[A-Z]+\d+[A-Z]?", c).group(0) for c in term_courses if re.match(r"[A-Z]+\d+[A-Z]?", c)}
+        codes += [c for c in exam_courses if c not in term_courses and c not in term_bases]
 
     def listed(code):
         course, row = {}, rows_by_code.get(code)
