@@ -64,7 +64,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .club { flex: none; display: block; border-radius: 50%; }
-.club img { display: block; width: 32px; height: 32px; border-radius: 50%; }
+.club img { display: block; width: 40px; height: 40px; border-radius: 50%; }
 .titles { min-width: 0; }
 .app-head h1 { margin: 0; font: 700 22px/1.05 var(--f-display); letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .term { margin: 2px 0 0; font-size: 12px; line-height: 1.3; color: var(--muted); }
@@ -276,11 +276,11 @@ main { flex: 1; overflow-y: auto; padding: 16px 16px 28px; overscroll-behavior: 
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
 
 /* Effects layer: twelve empty pieces over the page that a living theme turns into bees, snow or fish.
-   Hidden unless a theme shows it; "Theme animations" off in Settings (data-fx="off") hides it again. */
+   Hidden unless a theme shows it. data-fx="off" hides it again: app.js sets that when "Theme animations" is
+   off in Settings, or when the phone asks for reduced motion and the student has not switched them on. */
 .fx { position: fixed; inset: 0; z-index: 3; display: none; overflow: hidden; pointer-events: none; contain: strict; }
 .fx i { position: absolute; display: block; }
 :root[data-fx="off"] .fx { display: none !important; }
-@media (prefers-reduced-motion: reduce) { .fx { display: none !important; } }
 
 /* Theme picker: each option is a small preview of the app drawn with that theme's own colours. */
 .theme-picker { display: grid; gap: 10px; }

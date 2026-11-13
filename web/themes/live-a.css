@@ -258,8 +258,3 @@
 @keyframes la-peek { from { transform: scaleY(.35); opacity: 0; } }
 
 /* Reduced motion: the app already hides .fx; this stops the animations outside it. */
-@media (prefers-reduced-motion: reduce) {
-  :root[data-theme="bee"]:not([data-fx="off"]) .status::before, :root[data-theme="bee"]:not([data-fx="off"]) .empty-card::before,
-  :root[data-theme="cat"]:not([data-fx="off"]) .status::after, :root[data-theme="cat"]:not([data-fx="off"]) .empty-card::after, :root[data-theme="cat"]:not([data-fx="off"]) .btn.primary::after,
-  :root[data-theme="cat"]:not([data-fx="off"]) .tabs button[aria-selected="true"]::before { animation: none; }
-}

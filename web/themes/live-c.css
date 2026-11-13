@@ -281,7 +281,3 @@
 }
 
 /* Reduced motion: styles.css already hides .fx; stop the two animations outside it. */
-@media (prefers-reduced-motion: reduce) {
-  :root[data-theme="snow"] .app-head::before { animation: none; opacity: 0; }
-  :root[data-theme="arcade"] .tabs button[aria-selected="true"]::after { animation: none; }
-}

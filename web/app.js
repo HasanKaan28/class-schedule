@@ -20,7 +20,7 @@
     }
   };
 
-  const DEFAULT_SETTINGS = { theme: 'system', effects: true, before: false, lead: 15, evening: false, eveningTime: '20:00' };
+  const DEFAULT_SETTINGS = { theme: 'system', effects: null, before: false, lead: 15, evening: false, eveningTime: '20:00' };
   // Settings shows the themes in these groups. Light and dark are in styles.css, the rest in themes/*.css.
   const THEME_GROUPS = [
     ['themeBasic', ['system', 'light', 'dark']],
@@ -30,6 +30,9 @@
   ];
   const THEMES = THEME_GROUPS.flatMap(g => g[1]);
   const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const calmQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Theme animations: the choice made in Settings wins; with no choice (null) they follow the phone.
+  const effectsOn = () => state.settings.effects == null ? !calmQuery.matches : !!state.settings.effects;
   const LEAD_CHOICES = [5, 10, 15, 30, 60];
 
   const state = {
@@ -361,7 +364,8 @@
   // --- Quizzes --------------------------------------------------------------------------------
   // Students report quizzes to the club portal; only quizzes the club approved come back from the API.
 
-  const QUIZ_API = 'https://iusengclub.vercel.app/api';
+  // The club site's own address: the old vercel.app one redirects, and a redirect fails the browser's cross-site check.
+  const QUIZ_API = 'https://iuseng.club/api';
   const QUIZ_FRESH_MS = 2 * 60 * 1000;
   const QUIZ_KEEP_DAYS = 180; // past quizzes stay this long for their scores
   const QUIZ_COURSE = /^[A-Z]{2,5}\d{3}[A-Z]?/;
@@ -1080,7 +1084,7 @@
   function applyTheme() {
     const theme = THEMES.includes(state.settings.theme) ? state.settings.theme : 'system', root = document.documentElement;
     if (theme === 'system') delete root.dataset.theme; else root.dataset.theme = theme;
-    if (state.settings.effects === false) root.dataset.fx = 'off'; else delete root.dataset.fx;
+    if (effectsOn()) delete root.dataset.fx; else root.dataset.fx = 'off';
     const style = getComputedStyle(root), surface = style.getPropertyValue('--surface').trim();
     const dark = style.colorScheme === 'dark';
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = surface || (dark ? '#151E29' : '#FFFFFF'); });
@@ -1115,7 +1119,7 @@
     renderThemePicker();
     $('themeGroup').setAttribute('aria-label', t.theme);
     $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
-    if ($('setEffects')) $('setEffects').checked = s.effects !== false; // absent in an older cached page
+    if ($('setEffects')) $('setEffects').checked = effectsOn(); // absent in an older cached page
     $('setBefore').checked = s.before;
     $('setEvening').checked = s.evening;
     $('setEveningTime').value = s.eveningTime;
@@ -1248,6 +1252,7 @@
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setEffects', 'setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id) && $(id).addEventListener('change', onSettingChange));
   darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
+  calmQuery.addEventListener('change', applyTheme);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); renderExams(); loadQuizzes(false); syncReminders(); } });
   setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); renderExams(); }, 30000);
 
@@ -1273,5 +1278,17 @@
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => { /* the app still works without offline caching */ });
+    // A new version: reload once so the page, script and styles all come from it. Not while a form is open.
+    const hadWorker = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadWorker || reloaded || document.querySelector('dialog[open]')) return;
+      reloaded = true;
+      location.reload();
+    });
+    // The Android app can stay open for days, so look for a new version whenever it comes back to the front.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => { /* offline */ });
+    });
   }
 })();

@@ -1,6 +1,6 @@
 // Network first, so students get new screens and course data as soon as they are online.
 // Without a connection (or if it takes too long) the last saved copy is used.
-const CACHE = 'class-schedule-v6';
+const CACHE = 'class-schedule-v7';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'i18n.js', 'data/courses.js', 'data/midterms.js', 'themes/calm.css', 'themes/fun-a.css', 'themes/fun-b.css', 'themes/live-a.css', 'themes/live-b.css', 'themes/live-c.css', 'manifest.webmanifest', 'icon.svg', 'brand/iec-logo.png'];
 const TIMEOUT_MS = 5000;
 

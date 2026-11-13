@@ -22,7 +22,8 @@
   try {
     var settings = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}'), saved = settings.theme;
     if (saved && saved !== 'system' && /^[a-z0-9]+$/.test(saved)) document.documentElement.dataset.theme = saved;
-    if (settings.effects === false) document.documentElement.dataset.fx = 'off';
+    // Theme animations: the choice made in Settings wins; with no choice they follow the phone's "reduce motion".
+    if (settings.effects === false || (settings.effects == null && matchMedia('(prefers-reduced-motion: reduce)').matches)) document.documentElement.dataset.fx = 'off';
   } catch (e) { /* no saved settings yet */ }
 </script>
 </head>
@@ -32,7 +33,7 @@
 <header class="app-head">
   <div class="brand">
     <a class="club" href="https://iuseng.club" target="_blank" rel="noopener">
-      <img src="brand/iec-logo.png" width="32" height="32" alt="IUS Engineering Club">
+      <img src="brand/iec-logo.png" width="40" height="40" alt="IUS Engineering Club">
     </a>
     <div class="titles">
       <h1 data-i18n="appTitle">Class Schedule</h1>
