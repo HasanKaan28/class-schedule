@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F3EFE4">
+<title data-i18n="docTitle">Class Schedule: a free timetable app for IUS students</title>
+<meta name="description" content="A free weekly timetable for IUS students, with course details from the official schedule and eCampus, midterms, quizzes and class reminders. Unofficial, by the IUS Engineering Club." data-i18n-attr="content:metaDesc">
+<link rel="canonical" href="https://hasankaan28.github.io/class-schedule/about/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hasankaan28.github.io/class-schedule/about/">
+<meta property="og:site_name" content="Class Schedule">
+<meta property="og:title" content="Class Schedule: a free timetable app for IUS students" data-i18n-attr="content:docTitle">
+<meta property="og:description" content="A free weekly timetable for IUS students, with course details from the official schedule and eCampus, midterms, quizzes and class reminders. Unofficial, by the IUS Engineering Club." data-i18n-attr="content:metaDesc">
+<meta property="og:image" content="https://hasankaan28.github.io/class-schedule/about/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Class Schedule on a phone, with the timetable of a sample week" data-i18n-attr="content:ogAlt">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="about.css">
+<script>document.documentElement.className = 'js';</script>
+<script src="about.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="mark" href="#top">
+      <img src="../icon.svg" width="32" height="32" alt="">
+      <span data-i18n="appName">Class Schedule</span>
+    </a>
+    <nav class="nav" aria-label="Sections" data-i18n-attr="aria-label:navLabel">
+      <a href="#features" data-i18n="navFeatures">Features</a>
+      <a href="#how" data-i18n="navHow">How it works</a>
+      <a href="#screens" data-i18n="navScreens">Screens</a>
+      <a href="#install" data-i18n="navInstall">Install</a>
+      <a href="#iphone">iPhone</a>
+      <a href="#faq" data-i18n="navFaq">FAQ</a>
+    </nav>
+    <div class="lang js-only" role="group" aria-label="Language" data-i18n-attr="aria-label:langLabel">
+      <button type="button" data-lang="en" lang="en" aria-label="English" aria-pressed="true">EN</button>
+      <button type="button" data-lang="tr" lang="tr" aria-label="Türkçe" aria-pressed="false">TR</button>
+      <button type="button" data-lang="bs" lang="bs" aria-label="Bosanski" aria-pressed="false">BS</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- Hero: what it is, the two ways to get it, and the real app running in a phone frame. -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="week-grid" aria-hidden="true">
+    <i class="blk b1"></i><i class="blk b2"></i><i class="blk b3"></i><i class="blk b4"></i><i class="blk b5"></i><i class="blk b6"></i><i class="blk b7"></i>
+    <i class="now"></i>
+  </div>
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <p class="kicker" data-i18n="kicker">Free · Unofficial · By the IUS Engineering Club</p>
+      <h1 id="hero-title" data-i18n="appName">Class Schedule</h1>
+      <p class="lead" data-i18n="heroLead">A free weekly timetable for IUS students: add your classes once, and the app fills in the course details, midterms and quizzes for you.</p>
+      <div class="ctas">
+        <a class="btn primary" href="https://github.com/HasanKaan28/class-schedule/releases/latest/download/class-schedule.apk">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+          <span><b data-i18n="ctaApk">Download for Android</b><small data-i18n="ctaApkNote">APK · Android 8 or newer</small></span>
+        </a>
+        <a class="btn ghost" href="../">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5h16v11H4zM4 10h16M9 20h6"/></svg>
+          <span><b data-i18n="ctaWeb">Open in the browser</b><small data-i18n="ctaWebNote">Any phone or computer, iPhone too</small></span>
+        </a>
+        <a class="btn ghost" id="cta-iphone" href="#iphone">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2.5h8a1.5 1.5 0 0 1 1.5 1.5v16a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 20V4A1.5 1.5 0 0 1 8 2.5zM10.5 18.5h3M9.5 9.5h5M12 7v5"/></svg>
+          <span><b data-i18n="ctaIphone">iPhone: add to Home Screen</b><small data-i18n="ctaIphoneNote">A step-by-step guide</small></span>
+        </a>
+      </div>
+    </div>
+
+    <figure class="phone" aria-labelledby="demo-caption">
+      <div class="bezel">
+        <div class="screen">
+          <iframe id="demo" src="../?demo=1&amp;lang=en&amp;tab=today&amp;theme=bee" width="375" height="812" title="Live preview of Class Schedule with a sample timetable" data-i18n-attr="title:demoFrame"></iframe>
+          <img id="demo-shot" class="shot-fallback" src="img/shot-today.webp" width="750" height="1624" loading="lazy" alt="Today screen: the next class and the day's classes with free gaps between them" data-i18n-attr="alt:altToday" hidden>
+        </div>
+      </div>
+      <figcaption id="demo-caption" class="sr" data-i18n="demoCaption">The real Class Schedule app, running with a sample timetable</figcaption>
+    </figure>
+
+    <div class="demo js-only" id="try">
+      <h2 class="demo-title" data-i18n="demoTitle">Try it right here</h2>
+      <p class="demo-lead" data-i18n="demoLead">This is the real app with a sample timetable. Nothing you do in it is saved.</p>
+      <p class="demo-note" id="demo-note" hidden data-i18n="demoFallback">The live preview could not load, so this is a screenshot.</p>
+      <div class="ctl" id="demo-ctl">
+        <div class="ctl-row">
+          <h3 class="ctl-label" id="lbl-screen" data-i18n="demoScreen">Screen</h3>
+          <div class="seg" role="group" aria-labelledby="lbl-screen">
+            <button type="button" data-tab="today" aria-pressed="true" data-i18n="tabToday">Today</button>
+            <button type="button" data-tab="week" aria-pressed="false" data-i18n="tabWeek">Week</button>
+            <button type="button" data-tab="quizzes" aria-pressed="false" data-i18n="tabQuizzes">Quizzes</button>
+            <button type="button" data-tab="exams" aria-pressed="false" data-i18n="tabExams">Midterms</button>
+            <button type="button" data-tab="courses" aria-pressed="false" data-i18n="tabCourses">Courses</button>
+          </div>
+        </div>
+        <div class="ctl-row">
+          <h3 class="ctl-label" id="lbl-live" data-i18n="demoLiving">Living themes</h3>
+          <div class="chips" role="group" aria-labelledby="lbl-live" id="themes-live"></div>
+        </div>
+        <div class="ctl-row">
+          <h3 class="ctl-label" id="lbl-more" data-i18n="demoMore">More themes</h3>
+          <div class="chips small" role="group" aria-labelledby="lbl-more" id="themes-more"></div>
+        </div>
+      </div>
+      <p class="demo-status" id="demo-status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="sec" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <p class="eyebrow"><span class="slot">09:00</span> <span data-i18n="eyFeatures">What it does</span></p>
+    <h2 id="features-title" data-i18n="featuresTitle">Your whole week on one screen</h2>
+    <ul class="cards" role="list">
+      <li class="card c-seal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4zM4 9.5h16M9 9.5V20M14.5 9.5V20M8 3v4M16 3v4"/></svg>
+        <h3 data-i18n="f1t">Your weekly timetable</h3>
+        <p data-i18n="f1d">Type a course code such as CS103 and pick your section. Lecture times and rooms come from the official IUS schedule; lecturers, assistants, ECTS and office hours from eCampus.</p>
+      </li>
+      <li class="card c-honey">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM10 7h4M10 11h4M10 15h2"/></svg>
+        <h3 data-i18n="f2t">Midterm dates and rooms</h3>
+        <p data-i18n="f2d">The date, time and room of each of your midterms, from the official midterm schedule. During midterm week, Today shows your exams instead of classes.</p>
+      </li>
+      <li class="card c-sage">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-5 4zM9 9.5l2 2 4-4"/></svg>
+        <h3 data-i18n="f3t">Quizzes from classmates</h3>
+        <p data-i18n="f3d">Students report upcoming quizzes, the club checks each report, and the quiz then shows for everyone in that course and section.</p>
+      </li>
+      <li class="card c-seal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5h4"/></svg>
+        <h3 data-i18n="f4t">Class reminders</h3>
+        <p data-i18n="f4d">On Android: a reminder before each class and an evening summary of tomorrow, each switched on in Settings.</p>
+      </li>
+      <li class="card c-honey">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.6-.9 1.2-1.8-.5-1.1.2-2.2 1.4-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg>
+        <h3 data-i18n="f5t">20 themes</h3>
+        <p data-i18n="f5d">Light, dark, calm and fun ones, plus six living themes where bees, cats, fish and snow move around. Or let it follow your phone.</p>
+      </li>
+      <li class="card c-sage">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h10M8 3v2M5 5c1 4 4 7 7 8M11 5c-1 4-3.5 7-7 9M13 20l4-9 4 9M14.5 17h5"/></svg>
+        <h3 data-i18n="f6t">English, Turkish and Bosnian</h3>
+        <p data-i18n="f6d">Change the language in Settings, behind the gear at the top right.</p>
+      </li>
+      <li class="card c-seal">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9 9 0 0 1 13 0M9 16a4 4 0 0 1 6 0M12 19.5h.01M3 3l18 18"/></svg>
+        <h3 data-i18n="f7t">Works offline</h3>
+        <p data-i18n="f7d">The Android app opens with no connection, and the browser version keeps its last copy too.</p>
+      </li>
+      <li class="card c-honey">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2.5h8a1.5 1.5 0 0 1 1.5 1.5v16a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 20V4A1.5 1.5 0 0 1 8 2.5zM10 11.5h4v4h-4zM10.8 11.5V10a1.2 1.2 0 0 1 2.4 0v1.5"/></svg>
+        <h3 data-i18n="f8t">Your timetable stays on your phone</h3>
+        <p data-i18n="f8d">It is stored only on your phone or in your browser and is never uploaded. No account, no login.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- How it works: the data route, then the reasons behind the build. -->
+<section class="sec tint" id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <p class="eyebrow"><span class="slot">10:30</span> <span data-i18n="eyHow">How it works</span></p>
+    <h2 id="how-title" data-i18n="howTitle">From the official PDF to your phone, every night</h2>
+    <p class="sec-lead" data-i18n="howLead">Nobody types the course list in by hand. A small program collects it every night, and your phone downloads the result.</p>
+
+    <ol class="route">
+      <li class="stop">
+        <span class="stop-n">1</span>
+        <h3 data-i18n="r1t">IUS schedule PDF and eCampus</h3>
+        <p data-i18n="r1d">The official term schedule gives lecture times and rooms. eCampus gives syllabus links, ECTS, lecturers, tutorial and lab sections, and office hours.</p>
+      </li>
+      <li class="stop">
+        <span class="stop-n">2</span>
+        <h3 data-i18n="r2t">Nightly collector on GitHub Actions</h3>
+        <p data-i18n="r2d">Every night it looks up only this term's courses, waits 10 seconds between requests as eCampus asks, and saves any changes.</p>
+      </li>
+      <li class="stop">
+        <span class="stop-n">3</span>
+        <h3 data-i18n="r3t">GitHub Pages</h3>
+        <p data-i18n="r3d">Each change republishes the app's website on its own. It is plain HTML, CSS and JavaScript.</p>
+      </li>
+      <li class="stop end">
+        <span class="stop-n">4</span>
+        <h3 data-i18n="r4t">Your phone</h3>
+        <p data-i18n="r4d">The app loads the newest version when you are online and keeps a copy for when you are not. Your timetable is saved only here.</p>
+      </li>
+    </ol>
+
+    <h3 class="sub" data-i18n="whyTitle">Why it is built this way</h3>
+    <ul class="why" role="list">
+      <li><h4 data-i18n="w1t">You add your own classes</h4><p data-i18n="w1d">Reading your schedule from SIS would need your SIS password. Typing a code and tapping a section takes a few seconds, and your password stays yours.</p></li>
+      <li><h4 data-i18n="w2t">Two sources, each for what it does best</h4><p data-i18n="w2d">The schedule PDF is the most current source for lecture times and rooms. Starting from it, the collector checks about 250 courses on eCampus instead of 1,700.</p></li>
+      <li><h4 data-i18n="w3t">One polite collector, not every phone</h4><p data-i18n="w3d">One program reads eCampus once a night instead of every phone asking it. If eCampus changes its pages, one fix in the collector repairs it for everyone.</p></li>
+      <li><h4 data-i18n="w4t">Install once, updates arrive by themselves</h4><p data-i18n="w4d">The Android app loads its screens from GitHub Pages, so fixes and new features reach everyone without a new APK.</p></li>
+      <li><h4 data-i18n="w5t">Opens without internet</h4><p data-i18n="w5d">The APK carries its own copy of the app, and the timetable is stored on the phone, so nothing is lost when you go offline and back.</p></li>
+      <li><h4 data-i18n="w6t">One app for Android and the browser</h4><p data-i18n="w6d">The Android app is a thin shell around the web app, so both run the same code, and iPhone users get the browser version.</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- Screenshots -->
+<section class="sec" id="screens" aria-labelledby="screens-title">
+  <div class="wrap">
+    <p class="eyebrow"><span class="slot">12:00</span> <span data-i18n="eyScreens">Screens</span></p>
+    <h2 id="screens-title" data-i18n="screensTitle">See it before you install it</h2>
+    <p class="sec-lead" data-i18n="screensLead">Real screens from the app, with a sample timetable.</p>
+  </div>
+  <div class="shots" tabindex="0" role="region" aria-label="Screenshots, scroll sideways" data-i18n-attr="aria-label:shotsLabel">
+    <figure><img src="img/shot-today.webp" width="750" height="1624" loading="lazy" alt="Today screen: the next class and the day's classes with free gaps between them" data-i18n-attr="alt:altToday"><figcaption data-i18n="capToday">Today</figcaption></figure>
+    <figure><img src="img/shot-week.webp" width="750" height="1624" loading="lazy" alt="Week screen: a Monday to Friday timetable with coloured course blocks" data-i18n-attr="alt:altWeek"><figcaption data-i18n="capWeek">Week</figcaption></figure>
+    <figure><img src="img/shot-midterms.webp" width="750" height="1624" loading="lazy" alt="Midterms screen: the dates, times and rooms of a student's midterms" data-i18n-attr="alt:altMidterms"><figcaption data-i18n="capMidterms">Midterms</figcaption></figure>
+    <figure><img src="img/shot-courses.webp" width="750" height="1624" loading="lazy" alt="Courses screen: each course with its instructors and office hours" data-i18n-attr="alt:altCourses"><figcaption data-i18n="capCourses">Courses</figcaption></figure>
+    <figure><img src="img/shot-themes.webp" width="750" height="1624" loading="lazy" alt="Settings: the theme picker with all themes" data-i18n-attr="alt:altThemes"><figcaption data-i18n="capThemes">Theme picker</figcaption></figure>
+    <figure><img src="img/shot-bee.webp" width="750" height="1624" loading="lazy" alt="The app in the Beehive theme" data-i18n-attr="alt:altBee"><figcaption data-i18n="capBee">Beehive theme</figcaption></figure>
+    <figure><img src="img/shot-cat.webp" width="750" height="1624" loading="lazy" alt="The app in the Cats theme" data-i18n-attr="alt:altCat"><figcaption data-i18n="capCat">Cats theme</figcaption></figure>
+    <figure><img src="img/shot-space.webp" width="750" height="1624" loading="lazy" alt="The app in the Space theme" data-i18n-attr="alt:altSpace"><figcaption data-i18n="capSpace">Space theme</figcaption></figure>
+  </div>
+</section>
+
+<!-- Install -->
+<section class="sec tint" id="install" aria-labelledby="install-title">
+  <div class="wrap install">
+    <div>
+      <p class="eyebrow"><span class="slot">13:30</span> <span data-i18n="eyInstall">Install</span></p>
+      <h2 id="install-title" data-i18n="installTitle">On your Android phone in three steps</h2>
+      <ol class="steps">
+        <li data-i18n="s1">On your phone, open the <a href="https://github.com/HasanKaan28/class-schedule/releases/latest">latest release</a> on GitHub.</li>
+        <li data-i18n="s2">Download <code>class-schedule.apk</code> and open it.</li>
+        <li data-i18n="s3">Allow installing from this source when Android asks.</li>
+      </ol>
+      <p class="note" data-i18n="installNote">You only do this once. New screens and course data arrive by themselves whenever the phone is online.</p>
+    </div>
+    <div class="install-side">
+      <a class="btn primary" href="https://github.com/HasanKaan28/class-schedule/releases/latest/download/class-schedule.apk">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
+        <span><b data-i18n="ctaApk">Download for Android</b><small data-i18n="ctaApkNote">APK · Android 8 or newer</small></span>
+      </a>
+      <p data-i18n="noAndroid">No Android phone? <a href="#iphone">Add it to your iPhone</a> or <a href="../">open it in the browser</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- iPhone: the browser version added to the Home Screen. The pictures are simplified drawings, not Apple artwork. -->
+<section class="sec" id="iphone" aria-labelledby="iphone-title">
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-fwd" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M8.5 9H6.5v11.5h11V9h-2M12 3v11M8.5 6.5 12 3l3.5 3.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></symbol>
+    <symbol id="i-tabs" viewBox="0 0 24 24"><path d="M8 4h12v12M4 8h12v12H4z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM12 8v8M8 12h8"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol>
+    <symbol id="i-find" viewBox="0 0 24 24"><path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM15.5 15.5 20 20"/></symbol>
+  </svg>
+  <div class="wrap">
+    <p class="eyebrow"><span class="slot">14:00</span> <span>iPhone</span></p>
+    <h2 id="iphone-title" data-i18n="iosTitle">On your iPhone in five steps</h2>
+    <p class="sec-lead" data-i18n="iosLead">There is no APK for iPhone. Add the browser version to your Home Screen instead: it gets its own icon and opens like an app. Class reminders are on Android only.</p>
+
+    <ol class="ios-steps">
+      <li>
+        <div class="ios" role="img" aria-label="Drawing: Safari on an iPhone, with hasankaan28.github.io in the address bar at the bottom" data-i18n-attr="aria-label:iosPic1">
+          <div class="ios-st"><span>08:30</span><i></i></div>
+          <div class="ios-page"><b></b><i></i><i></i><i></i><i></i></div>
+          <div class="sf-bar">
+            <div class="sf-url hl">hasankaan28.github.io</div>
+            <div class="sf-tools"><svg><use href="#i-back"/></svg><svg><use href="#i-fwd"/></svg><svg><use href="#i-share"/></svg><svg><use href="#i-book"/></svg><svg><use href="#i-tabs"/></svg></div>
+          </div>
+        </div>
+        <h3 data-i18n="ios1t">Open it in Safari</h3>
+        <p data-i18n="ios1d">Go to <a href="../">hasankaan28.github.io/class-schedule</a> in Safari. It has to be Safari: if you opened the link inside Instagram or WhatsApp, first tap the menu there and choose “Open in Safari” or “Open in browser”.</p>
+      </li>
+      <li>
+        <div class="ios" role="img" aria-label="Drawing: Safari's bottom bar, with the Share button (a square with an arrow pointing up) highlighted" data-i18n-attr="aria-label:iosPic2">
+          <div class="ios-st"><span>08:30</span><i></i></div>
+          <div class="ios-page"><b></b><i></i><i></i><i></i><i></i></div>
+          <div class="sf-bar">
+            <div class="sf-url">hasankaan28.github.io</div>
+            <div class="sf-tools"><svg><use href="#i-back"/></svg><svg><use href="#i-fwd"/></svg><span class="hl tap"><svg><use href="#i-share"/></svg></span><svg><use href="#i-book"/></svg><svg><use href="#i-tabs"/></svg></div>
+          </div>
+        </div>
+        <h3 data-i18n="ios2t">Tap Share</h3>
+        <p data-i18n="ios2d">Tap the <b>Share</b> button in Safari's bottom bar: the square with an arrow pointing up.</p>
+      </li>
+      <li>
+        <div class="ios" role="img" aria-label="Drawing: the share sheet, with the Add to Home Screen row highlighted" data-i18n-attr="aria-label:iosPic3">
+          <div class="ios-st"><span>08:30</span><i></i></div>
+          <div class="ios-page dim"><b></b><i></i><i></i></div>
+          <div class="sheet">
+            <div class="sheet-head"><img src="../icon.svg" width="26" height="26" alt=""><span><b>Class Schedule</b><small>hasankaan28.github.io</small></span><i class="x"></i></div>
+            <div class="group"><div class="row"><span data-i18n="iosCopy">Copy</span><svg><use href="#i-copy"/></svg></div></div>
+            <div class="group">
+              <div class="row hl"><span data-i18n="iosAddHome">Add to Home Screen</span><svg><use href="#i-plus"/></svg></div>
+              <div class="row"><span data-i18n="iosFind">Find on Page</span><svg><use href="#i-find"/></svg></div>
+            </div>
+            <div class="edit" data-i18n="iosEdit">Edit Actions…</div>
+          </div>
+        </div>
+        <h3 data-i18n="ios3t">Tap Add to Home Screen</h3>
+        <p data-i18n="ios3d">Scroll down in the sheet that opens and tap <b>Add to Home Screen</b>. Not there? Scroll to the end of the list, tap <b>Edit Actions</b> and add it.</p>
+      </li>
+      <li>
+        <div class="ios" role="img" aria-label="Drawing: the Add to Home Screen screen with the Class Schedule icon and name, and Add highlighted at the top right" data-i18n-attr="aria-label:iosPic4">
+          <div class="ios-st"><span>08:30</span><i></i></div>
+          <div class="addsheet">
+            <div class="nav"><span data-i18n="iosCancel">Cancel</span><b data-i18n="iosAddHome">Add to Home Screen</b><span class="add hl" data-i18n="iosAdd">Add</span></div>
+            <div class="group app">
+              <img src="../icon.svg" width="44" height="44" alt="">
+              <span><b>Class Schedule</b><small>hasankaan28.github.io</small></span>
+            </div>
+            <div class="keys"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <h3 data-i18n="ios4t">Tap Add</h3>
+        <p data-i18n="ios4d">Check that the name is Class Schedule, then tap <b>Add</b> at the top right.</p>
+      </li>
+      <li>
+        <div class="ios home" role="img" aria-label="Drawing: a Home Screen with the Class Schedule icon on it" data-i18n-attr="aria-label:iosPic5">
+          <div class="ios-st light"><span>08:30</span><i></i></div>
+          <div class="apps">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <span class="mine hl"><img src="../icon.svg" width="40" height="40" alt=""><small>Class Schedule</small></span>
+          </div>
+          <div class="dock"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <h3 data-i18n="ios5t">Done</h3>
+        <p data-i18n="ios5d">The Class Schedule icon is now on your Home Screen. It opens full screen, like an app.</p>
+      </li>
+    </ol>
+    <p class="note ios-chrome" data-i18n="iosChrome">Using Chrome on iPhone? The same <b>Add to Home Screen</b> is under Chrome's Share button.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec" id="faq" aria-labelledby="faq-title">
+  <div class="wrap narrow">
+    <p class="eyebrow"><span class="slot">15:00</span> <span data-i18n="eyFaq">Questions</span></p>
+    <h2 id="faq-title" data-i18n="faqTitle">Good to know</h2>
+    <div class="faq">
+      <details>
+        <summary data-i18n="q1">Is this an official IUS app?</summary>
+        <p data-i18n="a1">No. It is an unofficial student project by the IUS Engineering Club, not made or endorsed by IUS. When in doubt, the official schedule and your instructor have the final word.</p>
+      </details>
+      <details>
+        <summary data-i18n="q2">Is my timetable uploaded anywhere?</summary>
+        <p data-i18n="a2">No. Your timetable is stored only on your phone or in your browser. The app downloads course data and the quiz list, but never sends your classes anywhere. When you report a quiz, the report goes to the club for checking, and your name is optional.</p>
+      </details>
+      <details>
+        <summary data-i18n="q3">Is there an iPhone app?</summary>
+        <p data-i18n="a3">No, but the browser version works on iPhone, and you can add it to your Home Screen so it opens like an app: <a href="#iphone">see the five steps</a>. Class reminders are on Android only.</p>
+      </details>
+      <details>
+        <summary data-i18n="q4">A time or room is wrong. What now?</summary>
+        <p data-i18n="a4">eCampus is sometimes behind; a tutorial can move before the syllabus is updated. Edit the class in Courses: times you enter yourself always win. Then tell the club at <a href="mailto:iusengclub@gmail.com">iusengclub@gmail.com</a> so it gets fixed for everyone.</p>
+      </details>
+      <details>
+        <summary data-i18n="q5">Does it cost anything?</summary>
+        <p data-i18n="a5">No. It is free, and its source code is on <a href="https://github.com/HasanKaan28/class-schedule">GitHub</a>.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Developer and contact -->
+<section class="sec tint" id="team" aria-labelledby="team-title">
+  <div class="wrap">
+    <p class="eyebrow"><span class="slot">16:30</span> <span data-i18n="eyTeam">Who made it</span></p>
+    <h2 id="team-title" data-i18n="teamTitle">Made by students, for students</h2>
+    <div class="team">
+      <div class="person">
+        <p class="role" data-i18n="devRole">Developed by</p>
+        <p class="name">Hasan Kaan Karabulut</p>
+        <ul class="links" role="list">
+          <li><a href="https://github.com/HasanKaan28"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-4 1.3-4-2-5.5-2.5M14.5 21v-3.4c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.3 4.3 0 0 0-.1-3.2s-1-.3-3.3 1.2a11.5 11.5 0 0 0-6 0C6.5 2.9 5.5 3.2 5.5 3.2a4.3 4.3 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.6c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg><span data-i18n="ghProfile">GitHub profile</span></a></li>
+          <li><a href="https://github.com/HasanKaan28/class-schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5"/></svg><span data-i18n="source">Source code</span></a></li>
+        </ul>
+      </div>
+      <div class="club">
+        <a class="club-link" href="https://iuseng.club">
+          <img src="../brand/iec-logo.png" width="72" height="72" alt="IUS Engineering Club logo" data-i18n-attr="alt:clubLogo">
+          <span><span class="role" data-i18n="clubRole">A project of the IUS Engineering Club</span><b>iuseng.club</b></span>
+        </a>
+        <p data-i18n="contactText">Found a bug or a wrong time, or have an idea? Write to the club:</p>
+        <a class="mail" href="mailto:iusengclub@gmail.com">iusengclub@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <p data-i18n="footLine">Class Schedule is an unofficial student project. It is not made or endorsed by IUS.</p>
+    <p class="foot-links">
+      <a href="../" data-i18n="footApp">Open the app</a>
+      <a href="https://github.com/HasanKaan28/class-schedule" data-i18n="source">Source code</a>
+      <a href="https://iuseng.club">iuseng.club</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>

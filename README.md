@@ -4,6 +4,7 @@ A weekly class schedule for students of the International University of Sarajevo
 
 This is an unofficial student project by the [IUS Engineering Club](https://iuseng.club). It is not made or endorsed by IUS.
 
+- **Website**: <https://hasankaan28.github.io/class-schedule/about/> explains the app, shows it live in a demo (`?demo=1`, a sample timetable that is never saved) and has install guides for Android and iPhone. Its files are in [`web/about/`](web/about).
 - **Android**: install the APK once. New screens and course data arrive on their own whenever the phone is online.
 - **Any phone or computer**: open <https://hasankaan28.github.io/class-schedule/> in a browser.
 - Languages: English, Turkish and Bosnian (in Settings, behind the gear at the top right).

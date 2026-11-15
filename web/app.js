@@ -5,11 +5,23 @@
   const PALETTE_SIZE = 8;
   const FORM_DAYS = [1, 2, 3, 4, 5, 6];
 
+  const params = new URLSearchParams(location.search);
+  // ?demo=1 is the live preview on the landing page (about/). It shows a sample timetable and never touches
+  // the student's saved data: no localStorage, no Android bridges, no reminders, no service worker.
+  const DEMO = params.get('demo') === '1';
   // A ?now=2026-10-19T12:30 query pins the clock, for previewing a moment in a desktop browser.
-  const pinned = new Date(new URLSearchParams(location.search).get('now') || NaN);
+  // Demo mode without one stops at a Wednesday 10:15 in a normal teaching week, so Today has a class running.
+  const pinned = new Date(params.get('now') || (DEMO ? '2026-11-11T10:15' : NaN));
+  // The Android app's bridges (storage aside), or none in demo mode.
+  const bridge = name => DEMO ? null : window[name];
 
   // The Android app saves through its own storage so the timetable survives offline and online launches.
-  const store = {
+  // Demo mode keeps everything in memory for this page view only.
+  const demoMemory = new Map();
+  const store = DEMO ? {
+    get(key) { return demoMemory.has(key) ? demoMemory.get(key) : null; },
+    set(key, value) { demoMemory.set(key, String(value)); }
+  } : {
     get(key) {
       try { return window.AndroidStore ? window.AndroidStore.getItem(key) : localStorage.getItem(key); } catch (e) { return null; }
     },
@@ -34,12 +46,35 @@
   // Theme animations: the choice made in Settings wins; with no choice (null) they follow the phone.
   const effectsOn = () => state.settings.effects == null ? !calmQuery.matches : !!state.settings.effects;
   const LEAD_CHOICES = [5, 10, 15, 30, 60];
+  const TABS = ['today', 'week', 'quizzes', 'exams', 'courses'];
+  const isLang = lang => typeof lang === 'string' && Object.prototype.hasOwnProperty.call(I18N, lang);
+
+  // Demo mode: a first-year timetable from real sections in courses.js, all with a midterm, Monday to Friday.
+  // [code, section, type in courses.js, type shown]; the ENS101 tutorial runs in the RC1.2 lab, so it shows as a lab.
+  const DEMO_CLASSES = [
+    ['CS103', '2', 'lec', 'lec'], ['ENS103', '1', 'lec', 'lec'],
+    ['ENS103', '1', 'tut', 'tut'], ['ENS101', '1', 'lec', 'lec'],
+    ['MATH101', '1', 'lec', 'lec'], ['ENS101', '5', 'tut', 'lab'],
+    ['MATH101', '3', 'tut', 'tut'], ['CS103', '2', 'tut', 'tut'],
+    ['TURK111', '2', 'lec', 'lec']
+  ];
+  if (DEMO) {
+    const classes = DEMO_CLASSES.map(([code, sec, from, t], i) => {
+      const course = CATALOG.courses[code] || {}, row = (course.sec || []).find(s => s[0] === sec && s[1] === from);
+      if (!row) return null;
+      const lecturer = t === 'lec' && course.lec && course.lec[0] ? course.lec[0].n : '';
+      return Object.assign({ id: `demo${i}`, code, sec, t, d: row[2], s: row[3], e: row[4], room: row[5] }, lecturer ? { who: lecturer } : {});
+    }).filter(Boolean);
+    store.set('classes', JSON.stringify(classes));
+    store.set('settings', JSON.stringify({ theme: THEMES.includes(params.get('theme')) ? params.get('theme') : 'light' }));
+    store.set('lang', isLang(params.get('lang')) ? params.get('lang') : 'en');
+  }
 
   const state = {
     lang: I18N[store.get('lang')] ? store.get('lang') : 'en',
     classes: loadClasses(),
     settings: loadSettings(),
-    notifyPermission: window.AndroidNotify ? window.AndroidNotify.permission() : 'unsupported',
+    notifyPermission: bridge('AndroidNotify') ? bridge('AndroidNotify').permission() : 'unsupported',
     quiz: (() => {
       const cache = loadQuizCache();
       return {
@@ -851,6 +886,8 @@
       : !(away >= -1 && away <= 150) ? t.errQuizDate : '';
     reportError(error);
     if (error) return;
+    // Demo mode shows the form but sends nothing.
+    if (DEMO) { closeDialog($('report')); return toast(t.demoReport); }
 
     const body = {
       course,
@@ -1076,8 +1113,8 @@
   }
 
   function syncReminders() {
-    if (!window.AndroidNotify) return;
-    try { window.AndroidNotify.schedule(JSON.stringify(reminderList())); } catch (e) { /* older app without reminders */ }
+    if (!bridge('AndroidNotify')) return;
+    try { bridge('AndroidNotify').schedule(JSON.stringify(reminderList())); } catch (e) { /* older app without reminders */ }
   }
 
   // "system" follows the phone; every other theme sets data-theme on <html>. The Android app also recolours its bars.
@@ -1088,9 +1125,9 @@
     const style = getComputedStyle(root), surface = style.getPropertyValue('--surface').trim();
     const dark = style.colorScheme === 'dark';
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => { meta.content = surface || (dark ? '#151E29' : '#FFFFFF'); });
-    if (window.AndroidUi) {
+    if (bridge('AndroidUi')) {
       // The app only knows system, light and dark, so the other themes tell it which of the two they are closest to.
-      try { window.AndroidUi.setTheme(theme === 'system' ? 'system' : dark ? 'dark' : 'light'); } catch (e) { /* older app: the page still switches */ }
+      try { bridge('AndroidUi').setTheme(theme === 'system' ? 'system' : dark ? 'dark' : 'light'); } catch (e) { /* older app: the page still switches */ }
     }
   }
 
@@ -1115,7 +1152,7 @@
 
   function renderSettings() {
     const t = T(), s = state.settings;
-    const native = !!window.AndroidNotify, oldApp = !native && !!window.AndroidStore;
+    const native = !!bridge('AndroidNotify'), oldApp = !native && !!bridge('AndroidStore');
     renderThemePicker();
     $('themeGroup').setAttribute('aria-label', t.theme);
     $('setLead').innerHTML = LEAD_CHOICES.map(m => `<option value="${m}"${m === s.lead ? ' selected' : ''}>${t.minutes(m)}</option>`).join('');
@@ -1141,7 +1178,7 @@
     if (id === 'setEveningTime' && e.target.value) s.eveningTime = e.target.value;
     saveSettings();
     if ((id === 'setBefore' || id === 'setEvening') && e.target.checked && state.notifyPermission !== 'granted') {
-      window.AndroidNotify.requestPermission();
+      bridge('AndroidNotify').requestPermission();
     }
     renderSettings();
   }
@@ -1187,7 +1224,7 @@
     const d = el.dataset;
     if ('openSettings' in d) { renderSettings(); return showDialog($('settings')); }
     if (el.id === 'settingsClose') return closeDialog($('settings'));
-    if (el.id === 'openNotifySettings') return window.AndroidNotify && window.AndroidNotify.openSettings();
+    if (el.id === 'openNotifySettings') return bridge('AndroidNotify') && bridge('AndroidNotify').openSettings();
     if (d.themeChoice && THEMES.includes(d.themeChoice)) {
       state.settings.theme = d.themeChoice;
       store.set('settings', JSON.stringify(state.settings));
@@ -1273,10 +1310,27 @@
   $('staffList').innerHTML = Object.keys(CATALOG.staff || {}).map(n => `<option value="${esc(n)}">`).join('');
   applyTheme();
   setLang(state.lang);
-  setTab('today');
+  setTab(DEMO && TABS.includes(params.get('tab')) ? params.get('tab') : 'today');
   loadQuizzes(false);
 
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // Demo mode: the landing page that embeds the preview switches its theme, language and tab with postMessage.
+  if (DEMO) {
+    window.addEventListener('message', e => {
+      const m = e.data;
+      if (e.origin !== location.origin || !m || m.type !== 'class-schedule-demo') return;
+      if (THEMES.includes(m.theme)) {
+        state.settings.theme = m.theme;
+        saveSettings();
+        applyTheme();
+        renderThemePicker();
+      }
+      if (isLang(m.lang)) setLang(m.lang);
+      if (TABS.includes(m.tab)) setTab(m.tab);
+    });
+  }
+
+  // Demo mode registers no service worker: the preview stays a plain page view.
+  if (!DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => { /* the app still works without offline caching */ });
     // A new version: reload once so the page, script and styles all come from it. Not while a form is open.
     const hadWorker = !!navigator.serviceWorker.controller;

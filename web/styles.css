@@ -93,6 +93,10 @@ main { flex: 1; overflow-y: auto; padding: 16px 16px 28px; overscroll-behavior: 
 .tabs button[aria-selected="true"]::before {
   content: ""; position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent);
 }
+/* Full screen from an iPhone Home Screen (viewport-fit=cover): the header stays below the notch and the tab bar
+   above the home indicator. The insets are 0 on Android and desktop, so nothing moves there. */
+.app-head { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+.tabs { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 /* Buttons */
 .btn { min-height: 46px; padding: 0 18px; border: 1px solid transparent; border-radius: var(--radius); font-weight: 600; }

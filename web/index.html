@@ -10,6 +10,12 @@
 <title>Class Schedule</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<!-- Added to an iPhone Home Screen, the app opens full screen with its own icon and name. -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Class Schedule">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="themes/calm.css">
 <link rel="stylesheet" href="themes/fun-a.css">
@@ -20,7 +26,9 @@
 <script>
   // Applies a theme chosen in Settings before the first paint (app.js keeps it up to date afterwards).
   try {
-    var settings = JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}'), saved = settings.theme;
+    // Demo mode (?demo=1, the landing page's live preview) takes the ?theme= query instead of the saved settings.
+    var params = new URLSearchParams(location.search), demo = params.get('demo') === '1';
+    var settings = demo ? { theme: params.get('theme') || 'light' } : JSON.parse((window.AndroidStore ? AndroidStore.getItem('settings') : localStorage.getItem('settings')) || '{}'), saved = settings.theme;
     if (saved && saved !== 'system' && /^[a-z0-9]+$/.test(saved)) document.documentElement.dataset.theme = saved;
     // Theme animations: the choice made in Settings wins; with no choice they follow the phone's "reduce motion".
     if (settings.effects === false || (settings.effects == null && matchMedia('(prefers-reduced-motion: reduce)').matches)) document.documentElement.dataset.fx = 'off';
