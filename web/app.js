@@ -46,10 +46,10 @@
   // Theme animations: the choice made in Settings wins; with no choice (null) they follow the phone.
   const effectsOn = () => state.settings.effects == null ? !calmQuery.matches : !!state.settings.effects;
   const LEAD_CHOICES = [5, 10, 15, 30, 60];
-  const TABS = ['today', 'week', 'quizzes', 'exams', 'courses'];
+  const TABS = ['today', 'week', 'quizzes', 'courses'];
   const isLang = lang => typeof lang === 'string' && Object.prototype.hasOwnProperty.call(I18N, lang);
 
-  // Demo mode: a first-year timetable from real sections in courses.js, all with a midterm, Monday to Friday.
+  // Demo mode: a first-year timetable from real sections in courses.js, Monday to Friday.
   // [code, section, type in courses.js, type shown]; the ENS101 tutorial runs in the RC1.2 lab, so it shows as a lab.
   const DEMO_CLASSES = [
     ['CS103', '2', 'lec', 'lec'], ['ENS103', '1', 'lec', 'lec'],
@@ -86,8 +86,6 @@
         renderLater: false
       };
     })(),
-    examScope: store.get('examScope') === 'all' ? 'all' : 'mine',
-    weekMode: null, // null: midterm week during the midterms, the class grid otherwise
     tab: 'today',
     day: 1,
     followToday: true,
@@ -178,21 +176,11 @@
 
   // --- Today ----------------------------------------------------------------------------------
 
-  // True when the day k days from today falls in midterm week.
-  function noClassesOn(k) {
-    if (!MIDTERMS) return false;
-    const date = isoDate(addDays(nowDate(), k));
-    return date >= MIDTERMS.from && date <= MIDTERMS.to;
-  }
-
   function findNow() {
     const { day, min } = clock();
-    if (noClassesOn(0)) return null;
     const current = state.classes.find(c => c.d === day && toMin(c.s) <= min && min < toMin(c.e));
     if (current) return { kind: 'now', c: current, left: toMin(current.e) - min, progress: (min - toMin(current.s)) / dur(current) };
-    // Look up to five weeks ahead, skipping midterm week, when no classes are held.
-    for (let k = 0; k < 36; k++) {
-      if (noClassesOn(k)) continue;
+    for (let k = 0; k < 8; k++) {
       const d = ((day - 1 + k) % 7) + 1;
       const c = byDay(d).find(x => k > 0 || toMin(x.s) > min);
       if (c) return { kind: 'next', c, k, until: k * 1440 + toMin(c.s) - min };
@@ -210,8 +198,7 @@
       sub = `${c.s}–${c.e}${c.room ? ' · ' + esc(c.room) : ''} · ${t.left(fmtDur(found.left))}`;
       extra = `<span class="bar"><i style="width:${Math.round(found.progress * 100)}%"></i></span>`;
     } else {
-      const when = found.k === 0 ? t.todayWord : found.k === 1 ? t.tomorrow : found.k < 7 ? dayLong(c.d)
-        : examDate(isoDate(addDays(nowDate(), found.k)), { weekday: 'long', day: 'numeric', month: 'long' });
+      const when = found.k === 0 ? t.todayWord : found.k === 1 ? t.tomorrow : dayLong(c.d);
       sub = `${when} ${c.s}${c.room ? ' · ' + esc(c.room) : ''}${found.until < 1440 ? ' · ' + t.inTime(fmtDur(found.until)) : ''}`;
     }
     el.className = `status ${colorClass(c.code)}`;
@@ -259,15 +246,13 @@
   }
 
   function renderToday() {
-    const empty = !state.classes.length, exams = examPeriod();
+    const empty = !state.classes.length;
     $('emptyCard').hidden = !empty;
-    ['chips', 'dayTitle', 'timeline'].forEach(id => { $(id).hidden = empty || exams; });
-    renderExamToday();
-    if (empty || exams) {
-      // No classes during midterm week: Today shows the midterms card and quizzes instead.
+    ['chips', 'dayTitle', 'timeline'].forEach(id => { $(id).hidden = empty; });
+    if (empty) {
       $('status').hidden = true;
       $('dayHint').hidden = true;
-      if (empty) $('quizSoon').hidden = true; else renderQuizSoon();
+      $('quizSoon').hidden = true;
       return;
     }
     renderStatus();
@@ -279,7 +264,6 @@
   // --- Week -----------------------------------------------------------------------------------
 
   function renderWeek() {
-    if (renderExamWeek()) return;
     const t = T(), { day, min } = clock(), days = shownDays();
     const codes = [...new Set(state.classes.map(c => c.code))];
     const ects = codes.reduce((sum, code) => sum + ((info(code) || {}).ects || 0), 0);
@@ -643,196 +627,6 @@
       <span class="more">${t.seeAll} →</span>`;
   }
 
-  // --- Midterms -------------------------------------------------------------------------------
-  // The official IUS midterm schedule (data/midterms.js). No classes are held on the midterm days.
-
-  const MIDTERMS = window.MIDTERMS || null;
-  const EXAMS = MIDTERMS ? MIDTERMS.exams.map(([course, date, s, e, n, note, room]) => ({ course, date, s, e, n, note, room })) : [];
-  const EXAM_TAB_DAYS = 3; // the Midterms tab stays this many days after the last midterm
-  const EXAM_SOON_DAYS = 14; // the Today card appears this many days before the first midterm
-
-  const baseCode = code => (String(code).match(QUIZ_COURSE) || [String(code)])[0];
-  const examName = x => (info(x.course) || {}).n || x.n || '';
-  const examSort = (a, b) => a.date.localeCompare(b.date) || a.s.localeCompare(b.s) || a.course.localeCompare(b.course);
-  const examPeriod = () => !!MIDTERMS && daysAway(MIDTERMS.from) <= 0 && daysAway(MIDTERMS.to) >= 0;
-  const examTabShown = () => !!MIDTERMS && daysAway(MIDTERMS.to) >= -EXAM_TAB_DAYS;
-  const examDone = x => daysAway(x.date) < 0 || (daysAway(x.date) === 0 && toMin(x.e) <= clock().min);
-  const examColor = course => { const c = state.classes.find(k => baseCode(k.code) === course); return c ? colorClass(c.code) : ''; };
-  const examDate = (date, opts) => new Intl.DateTimeFormat(T().locale, opts || { weekday: 'long', day: 'numeric', month: 'long' }).format(dateOf(date));
-
-  // The student's midterms, and their courses that have none in the schedule.
-  function myExams() {
-    const codes = [...new Set(state.classes.map(c => baseCode(c.code)))];
-    const list = EXAMS.filter(x => codes.includes(x.course)).sort(examSort);
-    const missing = codes.filter(code => !list.some(x => x.course === code)).sort();
-    return { list, missing };
-  }
-
-  // Midterms of the student that overlap each other, as "CS103 / MATH101" pairs.
-  function examClashes(list) {
-    const pairs = [];
-    list.forEach((a, i) => list.slice(i + 1).forEach(b => {
-      if (a.date === b.date && toMin(a.s) < toMin(b.e) && toMin(b.s) < toMin(a.e)) pairs.push(`${a.course} / ${b.course}`);
-    }));
-    return pairs;
-  }
-
-  function examRange() {
-    const format = new Intl.DateTimeFormat(T().locale, { day: 'numeric', month: 'long' });
-    const a = dateOf(MIDTERMS.from), b = dateOf(MIDTERMS.to);
-    return format.formatRange ? format.formatRange(a, b) : `${format.format(a)} – ${format.format(b)}`;
-  }
-
-  // "in 3 days", "tomorrow", "in 2 h 15 min", "now" or "done".
-  function examWhen(x) {
-    const t = T(), away = daysAway(x.date);
-    if (examDone(x)) return t.examDone;
-    if (away === 0) { const left = toMin(x.s) - clock().min; return left > 0 ? t.inTime(fmtDur(left)) : t.examNow; }
-    return away === 1 ? t.tomorrow : t.inDays(away);
-  }
-
-  function examHtml(x, countdown) {
-    const name = examName(x), done = examDone(x), mine = myExamRoom(x);
-    return `<div class="quiz exam ${examColor(x.course)}${done ? ' done' : ''}">
-      <span class="when">${esc(x.s)}<span>${esc(x.e)}</span></span>
-      <span class="what">
-        <span class="top"><span class="code">${esc(x.course)}</span>${x.note === 'oral' ? `<span class="tag">${esc(T().examOral)}</span>` : x.note === 'local' ? `<span class="tag">${esc(T().examLocal)}</span>` : ''}${countdown ? `<span class="tag">${esc(examWhen(x))}</span>` : ''}</span>
-        ${name ? `<span class="meta">${esc(name)}</span>` : ''}
-        ${mine ? `<span class="meta"><b>${esc(T().examYourRoom)}: ${esc(mine.room)}</b> · ${esc(T().examRoomRule(dayLong(mine.day)))}</span>`
-          : x.room ? `<span class="meta">${esc(examRoomLabel(x))}: ${esc(x.room)}</span>` : ''}
-        ${MIDTERMS.seatingByName && MIDTERMS.seatingByName.includes(x.course) ? `<span class="meta"><b>${esc(T().examSeatingByName)}</b></span>` : ''}
-      </span>
-    </div>`;
-  }
-
-  const examRoomLabel = x => x.room.includes(',') ? T().examRooms : T().examRoom;
-
-  // The student's own room when the instructor split the course by lecture day.
-  function myExamRoom(x) {
-    const rule = MIDTERMS && MIDTERMS.roomByLectureDay && MIDTERMS.roomByLectureDay[x.course];
-    if (!rule) return null;
-    const lec = state.classes.find(c => baseCode(c.code) === x.course && c.t === 'lec' && rule[c.d]);
-    return lec ? { room: rule[lec.d], day: lec.d } : null;
-  }
-
-  // One heading per midterm day.
-  function examDaysHtml(list, countdown) {
-    const t = T(), groups = [];
-    list.forEach(x => {
-      const last = groups[groups.length - 1];
-      if (last && last.date === x.date) last.items.push(x); else groups.push({ date: x.date, items: [x] });
-    });
-    return groups.map(({ date, items }) => {
-      const away = daysAway(date), label = examDate(date);
-      const relative = away === 0 ? t.todayWord : away === 1 ? t.tomorrow : '';
-      return `<section class="quiz-day${away < 0 ? ' past' : ''}">
-        <h3>${esc(relative || label)}${relative ? ` <span>${esc(label)}</span>` : ''}</h3>
-        ${items.map(x => examHtml(x, countdown)).join('')}
-      </section>`;
-    }).join('');
-  }
-
-  // Midterm week: one column per day that has one of the student's midterms, on the Week tab's time grid.
-  function examGridHtml(list) {
-    const today = isoDate(nowDate()), { min } = clock();
-    const dates = [...new Set(list.map(x => x.date))];
-    const start = Math.min(9 * 60, ...list.map(x => Math.floor(toMin(x.s) / 60) * 60));
-    const end = Math.max(17 * 60, ...list.map(x => Math.ceil(toMin(x.e) / 60) * 60));
-    let html = `<div class="week exam-grid${dates.length > 5 ? ' dense' : ''}" style="grid-template-columns:26px repeat(${dates.length}, minmax(0, 1fr)); --rows:${(end - start) / 10}">`;
-    html += '<div class="corner"></div>';
-    dates.forEach(d => {
-      const date = dateOf(d);
-      html += `<div class="dh${d === today ? ' is-today' : ''}">${dayShort(date.getDay())}<small>${date.getDate()}</small></div>`;
-    });
-    html += '<div class="times">';
-    for (let h = start / 60; h <= end / 60; h++) {
-      html += `<span class="hr" style="top:calc(var(--slot) * ${(h * 60 - start) / 10})">${String(h).padStart(2, '0')}</span>`;
-    }
-    html += '</div>';
-    dates.forEach(d => {
-      html += `<div class="col${d === today ? ' is-today' : ''}">`;
-      list.filter(x => x.date === d).forEach(x => {
-        const style = `top:calc(var(--slot) * ${(toMin(x.s) - start) / 10}); height:calc(var(--slot) * ${(toMin(x.e) - toMin(x.s)) / 10} - 2px)`;
-        html += `<span class="blk ${examColor(x.course)}${examDone(x) ? ' done' : ''}" style="${style}"><span class="code">${esc(x.course)}</span><span class="room">${esc(x.s)}</span></span>`;
-      });
-      if (d === today && min >= start && min <= end) html += `<span class="now" style="top:calc(var(--slot) * ${(min - start) / 10})"></span>`;
-      html += '</div>';
-    });
-    return html + '</div>';
-  }
-
-  function renderExams() {
-    const t = T(), shown = examTabShown();
-    $('tab-exams').hidden = !shown;
-    document.querySelector('.tabs').style.gridTemplateColumns = `repeat(${shown ? 5 : 4}, 1fr)`;
-    if (!shown) { if (state.tab === 'exams') setTab('today'); return; }
-    $('examRange').textContent = t.examRange(examRange());
-    $('examScope').setAttribute('aria-label', t.midterms);
-    document.querySelectorAll('[data-exam-scope]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.examScope === state.examScope)));
-    const mine = state.examScope === 'mine';
-    $('examSearchWrap').hidden = mine;
-    let html = '';
-    if (mine) {
-      const { list, missing } = myExams();
-      if (!state.classes.length) html = `<p class="empty">${t.noClassesForExams}</p>`;
-      else if (!list.length) html = `<p class="empty">${t.noExamsMine}</p>`;
-      else {
-        const clashes = examClashes(list);
-        if (clashes.length) html += `<p class="warn">${esc(t.examClash(clashes.join(', ')))}</p>`;
-        html += `<section class="quiz-day"><h3>${t.examsMode}</h3>${examGridHtml(list)}</section>`;
-        html += examDaysHtml(list, true);
-      }
-      if (missing.length) html += `<p class="hint">${esc(t.examMissing(missing.join(', ')))}</p>`;
-    } else {
-      const raw = $('examSearch').value, q = raw.toUpperCase().replace(/\s+/g, ''), qName = norm(raw);
-      const list = EXAMS.filter(x => !q || x.course.includes(q) || (qName.length >= 3 && norm(examName(x)).includes(qName))).sort(examSort);
-      html = list.length ? examDaysHtml(list, false) : `<p class="empty">${t.noExamMatch}</p>`;
-    }
-    $('examList').innerHTML = html;
-  }
-
-  // Week tab: switch between the class grid and the midterm week. During midterm week it opens on the midterms.
-  function renderExamWeek() {
-    const t = T(), shown = examTabShown();
-    const mode = shown ? (state.weekMode || (examPeriod() ? 'exams' : 'classes')) : 'classes';
-    $('weekMode').hidden = !shown;
-    document.querySelectorAll('[data-week-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.weekMode === mode)));
-    const exams = mode === 'exams';
-    $('week').hidden = exams;
-    $('weekHint').hidden = exams;
-    $('examWeek').hidden = !exams;
-    if (!exams) return false;
-    const { list } = myExams();
-    $('summary').textContent = t.examWeekHint(examRange());
-    $('examWeek').innerHTML = list.length ? examGridHtml(list) : `<p class="empty">${state.classes.length ? t.noExamsMine : t.noClassesForExams}</p>`;
-    return true;
-  }
-
-  // Today screen: from two weeks before, the first midterm; during midterm week, today's midterms instead of classes.
-  const examRoomShort = x => { const room = (myExamRoom(x) || x).room; return room ? ' · ' + esc(room) : ''; };
-
-  function renderExamToday() {
-    const t = T(), el = $('examToday'), period = examPeriod();
-    const soon = !!MIDTERMS && !period && daysAway(MIDTERMS.from) > 0 && daysAway(MIDTERMS.from) <= EXAM_SOON_DAYS;
-    el.hidden = !state.classes.length || !(period || soon);
-    if (el.hidden) return;
-    const { list } = myExams(), today = isoDate(nowDate()), rows = [];
-    if (period) {
-      const todays = list.filter(x => x.date === today);
-      todays.forEach(x => rows.push(`<b>${esc(x.course)}</b> ${esc(x.s)}–${esc(x.e)}${examRoomShort(x)} · ${esc(examWhen(x))}`));
-      if (!todays.length) rows.push(esc(t.noExamToday));
-    }
-    const next = list.find(x => x.date > today || (!period && x.date === today && !examDone(x)));
-    if (next) {
-      rows.push(`${esc(t.nextExam)}: <b>${esc(next.course)}</b> ${esc(examDate(next.date, { weekday: 'short', day: 'numeric', month: 'short' }))} ${esc(next.s)}${examRoomShort(next)} · ${esc(examWhen(next))}`);
-    } else if (!list.length) {
-      rows.push(esc(t.noExamsMine));
-    }
-    el.innerHTML = `<span class="lbl">${esc(period ? t.examWeekNoClasses : t.examRange(examRange()))}</span>
-      ${rows.map(r => `<span class="row">${r}</span>`).join('')}
-      <span class="more">${t.seeAllExams} →</span>`;
-  }
-
   function deviceId() {
     let id = store.get('deviceId');
     if (!/^[A-Za-z0-9_-]{8,64}$/.test(id || '')) {
@@ -1084,8 +878,6 @@
   // Weekly notifications for the Android app: {day: 1-7, min: minutes after midnight, title, body}.
   function reminderList() {
     const t = T(), s = state.settings, list = [];
-    // Android repeats reminders every week. Opened during midterm week, the app turns them off; the first open after it turns them back on.
-    if (examPeriod()) return list;
     if (s.before) {
       timed().forEach(c => {
         let day = c.d, min = toMin(c.s) - s.lead;
@@ -1191,7 +983,6 @@
     renderWeek();
     renderCourses();
     renderQuizzes();
-    renderExams();
   }
 
   function setLang(lang) {
@@ -1241,15 +1032,6 @@
       store.set('quizScope', state.quiz.scope);
       return renderQuizzes();
     }
-    if (d.examScope) {
-      state.examScope = d.examScope === 'all' ? 'all' : 'mine';
-      store.set('examScope', state.examScope);
-      return renderExams();
-    }
-    if (d.weekMode) {
-      state.weekMode = d.weekMode === 'exams' ? 'exams' : 'classes';
-      return renderWeek();
-    }
     if (el.id === 'qCancel') return closeDialog($('report'));
     if (d.day) {
       state.day = Number(d.day);
@@ -1284,14 +1066,13 @@
   $('quizList').addEventListener('focusout', e => {
     if (e.target.dataset.scoreId && state.quiz.renderLater) setTimeout(renderQuizzes, 0);
   });
-  $('examSearch').addEventListener('input', renderExams);
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setEffects', 'setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id) && $(id).addEventListener('change', onSettingChange));
   darkQuery.addEventListener('change', () => { if (state.settings.theme === 'system') applyTheme(); });
   calmQuery.addEventListener('change', applyTheme);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); renderExams(); loadQuizzes(false); syncReminders(); } });
-  setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); renderExams(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { renderToday(); renderWeek(); loadQuizzes(false); syncReminders(); } });
+  setInterval(() => { if (state.followToday) state.day = defaultDay(clock().day); renderToday(); renderWeek(); }, 30000);
 
   // Called by the Android app: the back button, and the notification permission after a prompt or a settings visit.
   window.app = {

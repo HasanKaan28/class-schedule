@@ -24,19 +24,18 @@ You only need to do this once.
 1. Tap **+ Add class** and type a course code, for example `CS103`. Pick the course from the list.
 2. This term's sections appear: lectures from the official schedule, tutorials and labs from eCampus. Tap yours to fill in the type, day, time and room, or enter them yourself.
 3. Optionally add your instructor's name; the app then shows their office and office hours too.
-4. Repeat for each lecture, tutorial and lab. Double diploma courses (IATA101, ITRD101) have no weekly class hours, so the app asks only for the code; their midterms and quizzes still show.
+4. Repeat for each lecture, tutorial and lab. Double diploma courses (IATA101, ITRD101) have no weekly class hours, so the app asks only for the code; their quizzes still show.
 
 - **Today** shows the class happening now or the next one, and the chosen day's classes with the free gaps between them.
 - **Week** shows Monday to Friday (and Saturday if you have classes then).
 - **Quizzes** lists upcoming quizzes for your courses and sections (or for all courses). Tap **Report a quiz** to tell the club about one; it appears for everyone once the club has checked it. Your next quizzes also show on Today.
-- **Midterms** (shown until a few days after the last midterm) lists the date and time of each of your midterms from the official IUS midterm schedule, as a list and as a midterm-week grid, or all courses' midterms with a search. During midterm week there are no classes, so Today shows your midterms instead and Week opens on the midterm week.
 - **Courses** lists each course with its instructors and office hours. Edit or delete classes here.
 
 Your timetable is stored only on your phone (or in your browser). It is never uploaded.
 
 ## Where the data comes from
 
-- **Courses, lecture times and rooms**: the official IUS undergraduate schedule for the term (currently [Fall 2026, updated 28 September](https://www.ius.edu.ba/sites/default/files/docs/undergraduate_fall26_v02_sep_28_0745.pdf)). [`tools/import_term_schedule.py`](tools/import_term_schedule.py) turns the PDF into [`data/term-schedule.json`](data/term-schedule.json). Courses that appear only in the midterm schedule ([`web/data/midterms.js`](web/data/midterms.js)), such as IATA101 and ITRD101 (but not ENS207 when ENS207-3 is listed), are added to the course list too, so students can pick them.
+- **Courses, lecture times and rooms**: the official IUS undergraduate schedule for the term (currently [Fall 2026, updated 28 September](https://www.ius.edu.ba/sites/default/files/docs/undergraduate_fall26_v02_sep_28_0745.pdf)). [`tools/import_term_schedule.py`](tools/import_term_schedule.py) turns the PDF into [`data/term-schedule.json`](data/term-schedule.json).
 - **Syllabus link, ECTS, lecturers, assistants, tutorial and lab sections, office hours**: IUS eCampus. [`tools/collect_ecampus.py`](tools/collect_ecampus.py) looks up only this term's courses, waiting 10 seconds between requests as eCampus's `robots.txt` asks, and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every night and commits any changes, which redeploys the site.
 
 eCampus is sometimes out of date (a tutorial time can change before the syllabus does). Times you enter yourself always win.
