@@ -99,6 +99,7 @@
   </section>
 
   <section class="view" id="view-courses" role="tabpanel" aria-labelledby="tab-courses" hidden>
+    <section class="status g-overall" id="gradesOverall" aria-live="polite" hidden></section>
     <button type="button" class="btn primary wide" data-add data-i18n="addClass"></button>
     <ul class="courses" id="courseList"></ul>
     <p class="source" id="source"></p>
@@ -202,6 +203,22 @@
     <p class="made-by"><span data-i18n="madeBy"></span> <a href="https://iuseng.club" target="_blank" rel="noopener">iuseng.club</a></p>
 
     <button type="button" class="btn ghost wide" id="settingsClose" data-i18n="close"></button>
+  </div>
+</dialog>
+
+<!-- My grades: one course's scores and weights. Filled in by app.js; nothing here leaves the device. -->
+<dialog id="grades" class="sheet grades" aria-labelledby="gradesTitle">
+  <div class="sheet-body">
+    <div class="g-head">
+      <h2 id="gradesTitle" tabindex="-1" autofocus></h2>
+      <p class="hint" id="gradesName"></p>
+    </div>
+    <div class="g-result" id="gradesResult" aria-live="polite"></div>
+    <div class="g-body" id="gradesBody"></div>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="gradesEdit"></button>
+      <button type="button" class="btn primary" id="gradesClose"></button>
+    </div>
   </div>
 </dialog>
 

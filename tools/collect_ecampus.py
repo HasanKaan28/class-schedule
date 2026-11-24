@@ -5,7 +5,7 @@ Usage:
 
 Lecture times and rooms come from the official term schedule (data/term-schedule.json, made by
 tools/import_term_schedule.py). Only those courses are looked up on eCampus, which adds the syllabus link,
-ECTS, lecturers, assistants, tutorial and lab sections, and office hours. Only public pages are read, with
+ECTS, lecturers, assistants, tutorial and lab sections, office hours and assessment weights. Only public pages are read, with
 the 10-second delay eCampus asks for in robots.txt. Each run reads syllabi until its time budget is used up,
 never-read and oldest first, and keeps the earlier details of the rest. Standard library only.
 """
@@ -190,6 +190,34 @@ def section_heading(root, words):
     return None
 
 
+def parse_assessment(root):
+    """'Assessment Methods and Criteria': [[name, weight in percent, count], ...].
+
+    The weight is the component's whole share of the grade; count is how many items share it
+    ("20% x2 Quizzes" -> ["Quizzes", 20, 2]). Weights are kept as eCampus writes them, even when
+    they do not add up to 100. No section, or no readable rows, gives an empty list.
+    """
+    section = root.find(id="courseAssessment")
+    if not section:
+        return []
+    components = []
+    for item in section.find_all("div", cls="criteria-item"):
+        percent, title = item.find("div", cls="criteria-percent"), item.find("h5")
+        if not (percent and title):
+            continue
+        weight = re.search(r"(\d+(?:[.,]\d+)?)\s*%", percent.text())
+        name = title.text().strip()
+        if not (weight and name):
+            continue
+        value = float(weight.group(1).replace(",", "."))
+        if value <= 0:
+            continue
+        qty = re.search(r"x\s*(\d+)", percent.text(), re.I)
+        count = min(max(int(qty.group(1)), 1), 30) if qty else 1
+        components.append([name, int(value) if value.is_integer() else value, count])
+    return components
+
+
 def parse_syllabus(html):
     root = parse(html)
     data = {}
@@ -242,6 +270,8 @@ def parse_syllabus(html):
             if day and match:
                 office_hours.append([day, match.group(1).zfill(5), match.group(2).zfill(5), clean(cells[2]), cells[3] if len(cells) > 3 else ""])
     data["oh"] = office_hours
+
+    data["assess"] = parse_assessment(root)
 
     updated = re.search(r"Last Update on (\w{3} \d{1,2}, \d{4})", root.text())
     if updated:

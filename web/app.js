@@ -86,6 +86,9 @@
         renderLater: false
       };
     })(),
+    grades: loadGrades(),
+    gradesCode: null,
+    gradesEditing: false,
     tab: 'today',
     day: 1,
     followToday: true,
@@ -365,6 +368,7 @@
       ${name ? `<h3>${esc(name)}</h3>` : ''}
       ${i && i.u ? `<p class="unit">${esc(i.u)}</p>` : ''}
       <ul class="entries">${rows}</ul>
+      ${gradeRow(code)}
       ${people.length ? `<p class="lbl-sm">${t.instructors}</p><ul class="people">${people.map(personHtml).join('')}</ul>` : ''}
     </li>`;
   }
@@ -373,11 +377,300 @@
     const t = T();
     const codes = [...new Set(sorted(state.classes).map(c => c.code))];
     $('courseList').innerHTML = codes.map(courseCard).join('');
+    renderOverall(codes);
     const fmt = value => new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value));
     const parts = [];
     if (CATALOG.term) parts.push(t.termFrom(CATALOG.term.term, fmt(CATALOG.term.updated)));
     if (CATALOG.generated) parts.push(t.dataFrom(fmt(CATALOG.generated)));
     $('source').textContent = parts.length ? parts.join(' ') : t.noData;
+  }
+
+  // --- Grades: kept on this device only, never sent anywhere -----------------------------------
+  // Weights come from each course's eCampus syllabus (courses.js "assess": [[name, percent, count], ...]).
+  // A student can correct them or, when eCampus has none, enter them; their own list then replaces the syllabus's.
+  // Stored under "grades": {code: {items: {itemKey: {got, max}}, comps?: [{id, n, w, c}]}}. An empty max means 100.
+
+  // The "IUS Grading System" table printed on every eCampus syllabus: the lowest score for each letter.
+  const IUS_SCALE = [[95, 'A'], [85, 'A-'], [80, 'B+'], [75, 'B'], [70, 'B-'], [65, 'C+'], [55, 'C'], [45, 'E'], [0, 'F']];
+  const letterFor = avg => (IUS_SCALE.find(([min]) => avg >= min) || IUS_SCALE[IUS_SCALE.length - 1])[1];
+  const MAX_COUNT = 30;
+  const sameWeight = (a, b) => Math.abs(a - b) < 0.01;
+
+  function loadGrades() {
+    try {
+      const grades = JSON.parse(store.get('grades') || '{}');
+      return grades && typeof grades === 'object' && !Array.isArray(grades) ? grades : {};
+    } catch (e) {
+      return {};
+    }
+  }
+  const saveGrades = () => store.set('grades', JSON.stringify(state.grades));
+  function gradeEntry(code) {
+    const g = state.grades[code] = state.grades[code] || {};
+    if (!g.items || typeof g.items !== 'object') g.items = {};
+    return g;
+  }
+
+  const num = value => { const n = parseFloat(String(value == null ? '' : value).replace(',', '.')); return isFinite(n) ? n : NaN; };
+  const fmtNum = (value, min, max) => new Intl.NumberFormat(T().locale, { minimumFractionDigits: min || 0, maximumFractionDigits: max == null ? 1 : max }).format(value);
+
+  // The syllabus's components, with ids from their names so scores stay put if eCampus reorders them.
+  function syllabusComponents(code) {
+    const assess = (info(code) || {}).assess, seen = new Map();
+    return (Array.isArray(assess) ? assess : []).filter(a => Array.isArray(a) && num(a[1]) > 0).map(([n, w, c]) => {
+      const base = 's:' + norm(n), k = (seen.get(base) || 0) + 1;
+      seen.set(base, k);
+      return { id: k > 1 ? `${base}#${k}` : base, n: String(n), w: num(w), c: Math.min(MAX_COUNT, Math.max(1, Math.round(num(c)) || 1)) };
+    });
+  }
+  const ownComponents = code => (state.grades[code] && Array.isArray(state.grades[code].comps) ? state.grades[code].comps : null);
+  const components = code => ownComponents(code) || syllabusComponents(code);
+  const weightSum = comps => comps.reduce((sum, c) => sum + (num(c.w) || 0), 0);
+
+  // "Quizzes" -> "Quiz", "Assignments" -> "Assignment"; longer names such as "Assignments + Quizzes" stay as they are.
+  function singular(name) {
+    const n = name.trim();
+    if (/\s|[+/&,]/.test(n)) return n;
+    return n.replace(/zzes$/i, 'z').replace(/ies$/i, 'y').replace(/([^s])s$/i, '$1');
+  }
+
+  // Scores the student already gave on the Quizzes tab fill the first quiz component, oldest quiz first.
+  function quizPrefill(code, comps) {
+    const comp = comps.find(c => /quiz|kviz/i.test(c.n));
+    if (!comp) return {};
+    const scores = state.quiz.scores;
+    const scored = state.quiz.list
+      .filter(q => q && q.course === code && q.date && scores[q.id] && !isNaN(num(scores[q.id].got)))
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
+    const out = {};
+    scored.slice(0, comp.c).forEach((q, i) => { out[`${comp.id}.${i + 1}`] = { got: scores[q.id].got, max: scores[q.id].max || '' }; });
+    return out;
+  }
+
+  function gradeItems(code) {
+    const comps = components(code), saved = (state.grades[code] || {}).items || {}, pre = quizPrefill(code, comps);
+    const items = [];
+    comps.forEach(comp => {
+      for (let k = 1; k <= comp.c; k++) {
+        const key = `${comp.id}.${k}`, own = saved[key], from = own || pre[key] || {};
+        items.push({ key, comp, k, got: from.got || '', max: from.max || '', pre: !own && !!pre[key], w: (num(comp.w) || 0) / comp.c });
+      }
+    });
+    return items;
+  }
+
+  // The average of what is entered, weighted by the syllabus and scaled over the weight entered so far.
+  function gradeResult(code) {
+    const items = gradeItems(code), total = weightSum(components(code));
+    let entered = 0, earned = 0;
+    items.forEach(it => {
+      const got = num(it.got), max = it.max === '' ? 100 : num(it.max);
+      if (isNaN(got) || !(max > 0) || !(it.w > 0)) return;
+      entered += it.w;
+      earned += it.w * got / max;
+    });
+    return { items, total, entered, earned, avg: entered > 0 ? earned / entered * 100 : null };
+  }
+
+  const letterTag = avg => `<span class="letter">${esc(letterFor(avg))}</span>`;
+
+  function gradeRow(code) {
+    const t = T(), r = gradeResult(code);
+    const avg = r.avg == null ? '<span></span>' : `<span class="g-avg">${t.average} <b>${fmtNum(r.avg, 1, 1)}</b> ${letterTag(r.avg)}</span>`;
+    return `<div class="grade-row">${avg}<button type="button" class="link-btn" data-grades="${esc(code)}">${t.myGrades}</button></div>`;
+  }
+
+  // Top of Courses: the courses with a score so far, weighted by their ECTS.
+  function renderOverall(codes) {
+    const t = T(), el = $('gradesOverall');
+    if (!el) return; // an older cached index.html
+    let sum = 0, ects = 0, n = 0;
+    codes.forEach(code => {
+      const r = gradeResult(code), e = (info(code) || {}).ects;
+      if (r.avg == null || !e) return;
+      sum += r.avg * e;
+      ects += e;
+      n++;
+    });
+    el.hidden = !n;
+    if (!n) return;
+    const avg = sum / ects;
+    el.innerHTML = `<span class="lbl">${t.overallAvg}</span>
+      <span class="g-big"><b>${fmtNum(avg, 1, 1)}</b>${letterTag(avg)}</span>
+      <span class="sub">${t.overallNote(n, ects)}</span>`;
+  }
+
+  function renderGradeResult() {
+    const t = T(), r = gradeResult(state.gradesCode);
+    const share = r.total > 0 ? Math.min(100, r.entered / r.total * 100) : 0;
+    const earnedBar = r.total > 0 ? Math.min(share, r.earned / r.total * 100) : 0;
+    $('gradesResult').innerHTML = r.avg == null
+      ? `<span class="g-big"><b class="muted">–</b></span>${r.items.length ? `<span class="g-stats">${t.noScoresYet}</span>` : ''}`
+      : `<span class="g-big"><b>${fmtNum(r.avg, 1, 1)}</b>${letterTag(r.avg)}<span class="g-cap">${t.average}</span></span>
+        <span class="g-bar" aria-hidden="true"><i style="width:${earnedBar}%"></i><s style="width:${share - earnedBar}%"></s></span>
+        <span class="g-stats"><span>${t.gradeEntered(t.pct(fmtNum(share)))}</span><span>${t.gradePoints(fmtNum(r.earned, 1, 1), fmtNum(r.total))}</span></span>`;
+  }
+
+  function gradeInput(it, part) {
+    const t = T(), value = part === 'got' ? it.got : it.max;
+    return `<input class="g-in${it.pre ? ' pre' : ''}" inputmode="decimal" maxlength="6" autocomplete="off" data-grade-key="${esc(it.key)}" data-part="${part}" value="${esc(value)}" placeholder="${part === 'got' ? '–' : '100'}" aria-label="${esc(`${it.label}: ${part === 'got' ? t.score : t.scoreMax}`)}">`;
+  }
+
+  function renderGradeItems() {
+    const t = T(), code = state.gradesCode, items = gradeItems(code), comps = components(code);
+    let html = comps.length ? '' : `<p class="empty">${t.noComps}</p>`;
+    comps.forEach(comp => {
+      const rows = items.filter(it => it.comp.id === comp.id);
+      rows.forEach(it => { it.label = comp.c > 1 ? `${singular(comp.n)} ${it.k}` : comp.n; });
+      const weight = t.pct(fmtNum(num(comp.w) || 0, 0, 2));
+      const row = (it, sub) => `<div class="g-item">
+          <span class="lb">${esc(it.label)}${sub ? `<small>${sub}</small>` : ''}</span>
+          ${gradeInput(it, 'got')}<span class="g-of">/</span>${gradeInput(it, 'max')}
+        </div>`;
+      // One item: a single row with its weight. Several: a heading with the shared weight, then a row each.
+      html += comp.c > 1
+        ? `<section class="g-group">
+          <h3><span class="g-name">${esc(comp.n)}</span> <span class="g-w">${weight} · ${t.eachItem(t.pct(fmtNum((num(comp.w) || 0) / comp.c, 0, 2)))}</span></h3>
+          ${rows.map(it => row(it)).join('')}
+        </section>`
+        : `<section class="g-group">${row(rows[0], weight)}</section>`;
+    });
+    if (items.some(it => it.pre)) html += `<p class="hint">${t.quizFilled}</p>`;
+    if (comps.length) html += `<p class="hint">${ownComponents(code) ? t.ownWeights : t.syllabusWeights} ${t.letterNote}</p>`;
+    $('gradesBody').innerHTML = html;
+  }
+
+  function totalLine(comps) {
+    const t = T(), total = weightSum(comps), ok = sameWeight(total, 100);
+    return { cls: ok || !comps.length ? 'hint' : 'warn', text: !comps.length ? '' : ok ? t.weightTotal(t.pct(fmtNum(total, 0, 2))) : t.weightOff(t.pct(fmtNum(total, 0, 2))) };
+  }
+
+  function renderCompEditor() {
+    const t = T(), code = state.gradesCode, comps = components(code), fromSyllabus = syllabusComponents(code).length > 0;
+    const field = (c, f, value, attrs) => `<input class="g-in${f === 'n' ? ' g-name' : ''}" data-comp-id="${esc(c.id)}" data-field="${f}" value="${esc(value)}" ${attrs} autocomplete="off" aria-label="${esc(f === 'n' ? t.compName : f === 'w' ? t.compWeight : t.compCount)}">`;
+    let html = `<p class="hint">${fromSyllabus ? t.editHint : t.noAssess}</p>`;
+    if (comps.length) {
+      html += `<div class="g-comp g-comp-head" aria-hidden="true"><span>${t.compName}</span><span>${t.compWeight}</span><span>${t.compCount}</span><span></span></div>`;
+      html += comps.map(c => `<div class="g-comp">
+        ${field(c, 'n', c.n, 'maxlength="60"')}
+        ${field(c, 'w', c.w, 'inputmode="decimal" maxlength="5"')}
+        ${field(c, 'c', c.c, 'inputmode="numeric" maxlength="2"')}
+        <button type="button" class="g-del" data-comp-del="${esc(c.id)}" aria-label="${esc(`${t.removeComp}: ${c.n}`)}">×</button>
+      </div>`).join('');
+    }
+    const total = totalLine(comps);
+    html += `<p class="${total.cls}" id="gradesTotal"${total.text ? '' : ' hidden'}>${total.text}</p>`;
+    html += `<button type="button" class="btn ghost wide" data-comp-add>${t.addComp}</button>`;
+    if (ownComponents(code) && fromSyllabus) html += `<button type="button" class="link-btn g-reset" data-comp-reset>${t.resetComps}</button>`;
+    $('gradesBody').innerHTML = html;
+  }
+
+  function renderGrades() {
+    const t = T(), code = state.gradesCode, dialog = $('grades');
+    if (!code || !dialog) return;
+    const i = info(code);
+    dialog.className = `sheet grades ${colorClass(code)}`;
+    $('gradesTitle').innerHTML = `<span class="code">${esc(code)}</span> ${esc(t.myGrades)}`;
+    $('gradesName').textContent = i ? i.n : '';
+    $('gradesName').hidden = !i;
+    $('gradesEdit').textContent = state.gradesEditing ? t.doneEditing : t.editComps;
+    $('gradesClose').textContent = t.close;
+    renderGradeResult();
+    if (state.gradesEditing) renderCompEditor(); else renderGradeItems();
+  }
+
+  function openGrades(code) {
+    state.gradesCode = code;
+    // No weights from eCampus and none entered yet: start in the editor.
+    state.gradesEditing = !components(code).length;
+    renderGrades();
+    showDialog($('grades'));
+    $('grades').scrollTop = 0;
+  }
+
+  // Editing starts from a copy of the syllabus's list, so the student only changes what is wrong.
+  function editableComponents(code) {
+    const g = gradeEntry(code);
+    if (!Array.isArray(g.comps)) g.comps = syllabusComponents(code).map(c => Object.assign({}, c));
+    return g.comps;
+  }
+
+  // Drops scores whose item no longer exists (a removed component, a lower count).
+  function pruneItems(code) {
+    const g = state.grades[code];
+    if (!g || !g.items) return;
+    const keys = new Set(gradeItems(code).map(it => it.key));
+    Object.keys(g.items).forEach(k => { if (!keys.has(k)) delete g.items[k]; });
+  }
+
+  function onGradeInput(e) {
+    const input = e.target, code = state.gradesCode, d = input.dataset;
+    if (!code) return;
+    if (d.gradeKey) {
+      const clean = cleanScore(input.value);
+      if (clean !== input.value) input.value = clean;
+      const it = gradeItems(code).find(x => x.key === d.gradeKey);
+      if (!it) return;
+      const g = gradeEntry(code), entry = Object.assign({ got: it.got, max: it.max }, { [d.part]: clean });
+      // A cleared row is forgotten, unless it would bring back a score from the Quizzes tab.
+      if (entry.got || entry.max || quizPrefill(code, components(code))[it.key]) g.items[it.key] = entry;
+      else delete g.items[it.key];
+      input.classList.remove('pre');
+      saveGrades();
+      return renderGradeResult();
+    }
+    if (d.compId) {
+      const comp = editableComponents(code).find(c => c.id === d.compId);
+      if (!comp) return;
+      if (d.field === 'n') comp.n = input.value.slice(0, 60);
+      if (d.field === 'w') {
+        const clean = cleanScore(input.value).slice(0, 5);
+        if (clean !== input.value) input.value = clean;
+        comp.w = Math.min(100, num(clean) || 0);
+      }
+      if (d.field === 'c') {
+        const clean = input.value.replace(/\D/g, '').slice(0, 2);
+        if (clean !== input.value) input.value = clean;
+        if (clean) comp.c = Math.min(MAX_COUNT, Math.max(1, Number(clean)));
+      }
+      pruneItems(code);
+      saveGrades();
+      renderGradeResult();
+      const total = totalLine(components(code)), el = $('gradesTotal');
+      if (el) { el.className = total.cls; el.textContent = total.text; el.hidden = !total.text; }
+    }
+  }
+
+  // Buttons inside the grades sheet; true when the click was handled.
+  function onGradeButton(el) {
+    const code = state.gradesCode, d = el.dataset;
+    if (el.id === 'gradesClose') { closeDialog($('grades')); return true; }
+    if (!code) return false;
+    if (el.id === 'gradesEdit') { state.gradesEditing = !state.gradesEditing; renderGrades(); return true; }
+    if ('compAdd' in d) {
+      const comps = editableComponents(code);
+      comps.push({ id: 'c:' + newId(), n: T().newComp, w: Math.max(0, Math.round((100 - weightSum(comps)) * 100) / 100), c: 1 });
+      saveGrades();
+      renderGrades();
+      const names = $('gradesBody').querySelectorAll('.g-name');
+      if (names.length) { names[names.length - 1].focus(); names[names.length - 1].select(); }
+      return true;
+    }
+    if (d.compDel) {
+      gradeEntry(code).comps = editableComponents(code).filter(c => c.id !== d.compDel);
+      pruneItems(code);
+      saveGrades();
+      renderGrades();
+      return true;
+    }
+    if ('compReset' in d) {
+      delete gradeEntry(code).comps;
+      pruneItems(code);
+      saveGrades();
+      renderGrades();
+      return true;
+    }
+    return false;
   }
 
   // --- Quizzes --------------------------------------------------------------------------------
@@ -995,6 +1288,7 @@
     $('openSettings').setAttribute('aria-label', T().settings);
     if ($('siteLink')) $('siteLink').setAttribute('aria-label', T().siteLink); // absent in an older cached page
     if ($('editor').open) { renderSegments(); onCodeInput(false); }
+    if ($('grades') && $('grades').open) renderGrades();
     renderSettings();
     renderAll();
     syncReminders(); // notification texts follow the language
@@ -1013,6 +1307,8 @@
     const el = e.target.closest('button');
     if (!el) return;
     const d = el.dataset;
+    if (d.grades) return openGrades(d.grades);
+    if (el.closest('#grades') && onGradeButton(el)) return;
     if ('openSettings' in d) { renderSettings(); return showDialog($('settings')); }
     if (el.id === 'settingsClose') return closeDialog($('settings'));
     if (el.id === 'openNotifySettings') return bridge('AndroidNotify') && bridge('AndroidNotify').openSettings();
@@ -1066,6 +1362,11 @@
   $('quizList').addEventListener('focusout', e => {
     if (e.target.dataset.scoreId && state.quiz.renderLater) setTimeout(renderQuizzes, 0);
   });
+  if ($('grades')) {
+    $('grades').addEventListener('input', onGradeInput);
+    $('grades').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input')) e.target.blur(); });
+    $('grades').addEventListener('close', () => { state.gradesCode = null; renderCourses(); });
+  }
   $('fCode').addEventListener('input', () => onCodeInput(true));
   ['fStart', 'fEnd'].forEach(id => $(id).addEventListener('input', updateWarning));
   ['setEffects', 'setBefore', 'setEvening', 'setLead', 'setEveningTime'].forEach(id => $(id) && $(id).addEventListener('change', onSettingChange));
@@ -1077,7 +1378,7 @@
   // Called by the Android app: the back button, and the notification permission after a prompt or a settings visit.
   window.app = {
     back() {
-      const open = ['editor', 'settings', 'report'].map($).find(dialog => dialog.open);
+      const open = ['editor', 'settings', 'report', 'grades'].map($).find(dialog => dialog && dialog.open);
       if (open) { closeDialog(open); return true; }
       if (state.tab !== 'today') { setTab('today'); return true; }
       return false;

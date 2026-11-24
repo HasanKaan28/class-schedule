@@ -30,13 +30,17 @@ You only need to do this once.
 - **Week** shows Monday to Friday (and Saturday if you have classes then).
 - **Quizzes** lists upcoming quizzes for your courses and sections (or for all courses). Tap **Report a quiz** to tell the club about one; it appears for everyone once the club has checked it. Your next quizzes also show on Today.
 - **Courses** lists each course with its instructors and office hours. Edit or delete classes here.
+- **My grades** on each course card opens a grade calculator. Type the scores you see in SIS (the maximum is 100 unless you change it) and the sheet shows at once your weighted average so far, how much of the grade you have entered and the points earned out of 100, with the letter on the IUS grading scale. Weights come from the course's syllabus on eCampus; you can correct them, or enter them yourself when eCampus has none. Quiz scores you already typed on the Quizzes tab fill in the quiz rows. The top of Courses shows your ECTS-weighted average over the courses with a score.
 
-Your timetable is stored only on your phone (or in your browser). It is never uploaded.
+Your timetable, quiz scores and grades are stored only on your phone (or in your browser). They are never uploaded. The app never reads SIS.
 
 ## Where the data comes from
 
 - **Courses, lecture times and rooms**: the official IUS undergraduate schedule for the term (currently [Fall 2026, updated 28 September](https://www.ius.edu.ba/sites/default/files/docs/undergraduate_fall26_v02_sep_28_0745.pdf)). [`tools/import_term_schedule.py`](tools/import_term_schedule.py) turns the PDF into [`data/term-schedule.json`](data/term-schedule.json).
-- **Syllabus link, ECTS, lecturers, assistants, tutorial and lab sections, office hours**: IUS eCampus. [`tools/collect_ecampus.py`](tools/collect_ecampus.py) looks up only this term's courses, waiting 10 seconds between requests as eCampus's `robots.txt` asks, and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every night and commits any changes, which redeploys the site.
+- **Syllabus link, ECTS, lecturers, assistants, tutorial and lab sections, office hours, assessment weights**: IUS eCampus. [`tools/collect_ecampus.py`](tools/collect_ecampus.py) looks up only this term's courses, waiting 10 seconds between requests as eCampus's `robots.txt` asks, and writes [`web/data/courses.js`](web/data/courses.js). The [collect workflow](.github/workflows/collect.yml) runs it every night and commits any changes, which redeploys the site.
+
+- **Assessment weights**: the "Assessment Methods and Criteria" part of each syllabus, stored as `assess: [[name, weight %, count], ...]` per course (for CS103: `["Quizzes", 20, 2]` is two quizzes sharing 20%). Courses whose syllabus has no such part get no `assess`, and weights are kept as written even when they do not add up to 100.
+- **Letter grades**: the "IUS Grading System" table printed on every eCampus syllabus, for example [CS103](https://ecampus.ius.edu.ba/syllabus/cs103-introduction-programming): 95–100 A, 85–94 A-, 80–84 B+, 75–79 B, 70–74 B-, 65–69 C+, 55–64 C, 45–54 E, 0–44 F.
 
 eCampus is sometimes out of date (a tutorial time can change before the syllabus does). Times you enter yourself always win.
 
@@ -80,6 +84,7 @@ python tools/collect_ecampus.py --pages 1 --limit 3 --out build/test-courses.js
 | Decision | Alternative considered | Reason |
 | --- | --- | --- |
 | Students enter their own classes | Read schedules from SIS | SIS needs each student's login. Typing a code and tapping a section takes a few seconds. |
+| Students type their own scores | Read grades from SIS | Same reason: SIS needs a login. The weights are public on eCampus, so only the scores are typed, and they never leave the phone. |
 | Official term schedule for lectures, eCampus for the rest | Everything from eCampus | The schedule PDF is the most current source for lecture times and rooms, and limits the eCampus lookups to about 250 courses instead of 1,700. |
 | Collection on GitHub Actions | Each phone reads eCampus directly | One polite crawler instead of every phone hitting eCampus, and a site redesign only needs one fix in the collector. |
 | App loads its screens from GitHub Pages | Screens bundled only in the APK | Students install once; fixes and features reach everyone without a new APK. |
