@@ -17,22 +17,42 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Upload and deploy are separate jobs on purpose: deploy-pages looks the artifact up through the
+  # list API, which can lag a moment behind the upload ("Found 0 artifact(s)"). The job boundary
+  # gives it time to catch up, and the deploy job retries once more if it still misses.
+  build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          name: github-pages
+          path: web
+
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy_retry.outputs.page_url || steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v5
+      - id: deploy
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
         with:
-          ref: main
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+          artifact_name: github-pages
+      - name: Wait before retrying deploy
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 30
+      - id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v5
         with:
-          path: web
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          artifact_name: github-pages
